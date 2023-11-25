@@ -1,0 +1,23 @@
+{
+  "name": "@turso/api",
+  "version": "0.1.0",
+  "author": "Jamie Barton <jamie@notrab.dev (https://notrab.dev)",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true
+  },
+  "dependencies": {
+    "whatwg-fetch": "^3.6.19"
+  }
+}
