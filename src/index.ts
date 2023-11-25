@@ -5,6 +5,70 @@ interface TursoConfig {
   baseUrl?: string;
 }
 
+interface ApiToken {
+  id: string;
+  name: string;
+}
+
+class ApiTokenClient {
+  constructor(private config: TursoConfig) {}
+
+  async list(): Promise<ApiToken[]> {
+    const response = await TursoClient.request<{ tokens: ApiToken[] }>(
+      "auth/api-tokens",
+      this.config
+    );
+
+    return response.tokens ?? [];
+  }
+
+  async create(name: string) {
+    const response = await TursoClient.request<ApiToken & { token: string }>(
+      `auth/api-tokens/${name}`,
+      this.config,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+      }
+    );
+
+    return response;
+  }
+
+  async revoke(name: string) {
+    const response = await TursoClient.request<{ token: string }>(
+      `auth/api-tokens/${name}`,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
+
+    return response;
+  }
+
+  async validate(token: string): Promise<{ valid: boolean; expiry: number }> {
+    const response = await TursoClient.request<{ exp: number }>(
+      "auth/api-tokens/validate",
+      this.config,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    return {
+      valid: response.exp !== -1 && response.exp > currentTime,
+      expiry: response.exp,
+    };
+  }
+}
+
 interface Organization {
   name: string;
   slug: string;
@@ -201,6 +265,7 @@ class GroupClient {
 
 class TursoClient {
   private config: TursoConfig;
+  public apiTokens: ApiTokenClient;
   public organizations: OrganizationClient;
   public locations: LocationClient;
   public groups: GroupClient;
@@ -211,6 +276,7 @@ class TursoClient {
       ...config,
     };
 
+    this.apiTokens = new ApiTokenClient(this.config);
     this.organizations = new OrganizationClient(this.config);
     this.locations = new LocationClient(this.config);
     this.groups = new GroupClient(this.config);

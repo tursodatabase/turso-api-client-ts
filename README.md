@@ -42,4 +42,8 @@ const group = await turso.groups.removeLocation(
   "lhr",
   "my-company"
 ); // org
+
+const tokens = await turso.apiTokens.list();
+const token = await turso.apiTokens.create("superdupertokenname");
+const token = await turso.apiTokens.revoke("superdupertokenname");
 ```
