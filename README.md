@@ -10,4 +10,8 @@ const turso = createClient({
 });
 
 const organizations = await turso.organizations.list();
+
+const orgMembers = await turso.organizations.members("slug");
+
+const locations = await turso.locations.list();
 ```
