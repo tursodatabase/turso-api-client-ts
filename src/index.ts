@@ -97,10 +97,113 @@ class LocationClient {
   }
 }
 
+interface Group {
+  locations: Array<keyof LocationKeys>;
+  name: string;
+  primary: keyof LocationKeys;
+}
+
+class GroupClient {
+  constructor(private config: TursoConfig) {}
+
+  async list(orgSlug?: string): Promise<Group[]> {
+    const response = await TursoClient.request<{ groups: Group[] }>(
+      orgSlug ? `organizations/${orgSlug}/groups` : "groups",
+      this.config
+    );
+
+    return response.groups ?? [];
+  }
+
+  async get(name: string, orgSlug?: string): Promise<Group> {
+    const response = await TursoClient.request<{ group: Group }>(
+      orgSlug ? `organizations/${orgSlug}/groups/${name}` : `groups/${name}`,
+      this.config
+    );
+
+    return response.group;
+  }
+
+  async create(
+    data: {
+      name: string;
+      location: Array<keyof LocationKeys>;
+    },
+    orgSlug?: string
+  ): Promise<Group> {
+    const response = await TursoClient.request<{ group: Group }>(
+      orgSlug ? `organizations/${orgSlug}/groups` : "groups",
+      this.config,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    return response.group;
+  }
+
+  async delete(name: string, orgSlug?: string): Promise<Group> {
+    const response = await TursoClient.request<{ group: Group }>(
+      orgSlug ? `organizations/${orgSlug}/groups/${name}` : `groups/${name}`,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
+
+    return response.group;
+  }
+
+  async addLocation(
+    groupName: string,
+    location: keyof LocationKeys,
+    orgSlug?: string
+  ): Promise<Group> {
+    const endpoint = orgSlug
+      ? `organizations/${orgSlug}/groups/${groupName}/locations/${location}`
+      : `groups/${groupName}/locations/${location}`;
+
+    const response = await TursoClient.request<{ group: Group }>(
+      endpoint,
+      this.config,
+      {
+        method: "POST",
+      }
+    );
+
+    return response.group;
+  }
+
+  async removeLocation(
+    groupName: string,
+    location: keyof LocationKeys,
+    orgSlug?: string
+  ): Promise<Group> {
+    const endpoint = orgSlug
+      ? `organizations/${orgSlug}/groups/${groupName}/locations/${location}`
+      : `groups/${groupName}/locations/${location}`;
+
+    const response = await TursoClient.request<{ group: Group }>(
+      endpoint,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
+
+    return response.group;
+  }
+}
+
 class TursoClient {
   private config: TursoConfig;
   public organizations: OrganizationClient;
   public locations: LocationClient;
+  public groups: GroupClient;
 
   constructor(config: TursoConfig) {
     this.config = {
@@ -110,6 +213,7 @@ class TursoClient {
 
     this.organizations = new OrganizationClient(this.config);
     this.locations = new LocationClient(this.config);
+    this.groups = new GroupClient(this.config);
   }
 
   static async request<T>(
