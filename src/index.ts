@@ -1,8 +1,8 @@
 import "whatwg-fetch";
 
 interface TursoConfig {
+  org: string;
   token: string;
-  org?: string;
   baseUrl?: string;
 }
 
@@ -174,7 +174,7 @@ class GroupClient {
 
   async list(): Promise<Group[]> {
     const response = await TursoClient.request<{ groups: Group[] }>(
-      this.config.org ? `organizations/${this.config.org}/groups` : "groups",
+      `organizations/${this.config.org}/groups`,
       this.config
     );
 
@@ -183,9 +183,7 @@ class GroupClient {
 
   async get(name: string): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      this.config.org
-        ? `organizations/${this.config.org}/groups/${name}`
-        : `groups/${name}`,
+      `organizations/${this.config.org}/groups/${name}`,
       this.config
     );
 
@@ -197,7 +195,7 @@ class GroupClient {
     location: Array<keyof LocationKeys>;
   }): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      this.config.org ? `organizations/${this.config.org}/groups` : "groups",
+      `organizations/${this.config.org}/groups`,
       this.config,
       {
         method: "POST",
@@ -213,9 +211,7 @@ class GroupClient {
 
   async delete(name: string): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      this.config.org
-        ? `organizations/${this.config.org}/groups/${name}`
-        : `groups/${name}`,
+      `organizations/${this.config.org}/groups/${name}`,
       this.config,
       {
         method: "DELETE",
@@ -229,12 +225,8 @@ class GroupClient {
     groupName: string,
     location: keyof LocationKeys
   ): Promise<Group> {
-    const endpoint = this.config.org
-      ? `organizations/${this.config.org}/groups/${groupName}/locations/${location}`
-      : `groups/${groupName}/locations/${location}`;
-
     const response = await TursoClient.request<{ group: Group }>(
-      endpoint,
+      `organizations/${this.config.org}/groups/${groupName}/locations/${location}`,
       this.config,
       {
         method: "POST",
@@ -248,12 +240,8 @@ class GroupClient {
     groupName: string,
     location: keyof LocationKeys
   ): Promise<Group> {
-    const endpoint = this.config.org
-      ? `organizations/${this.config.org}/groups/${groupName}/locations/${location}`
-      : `groups/${groupName}/locations/${location}`;
-
     const response = await TursoClient.request<{ group: Group }>(
-      endpoint,
+      `organizations/${this.config.org}/groups/${groupName}/locations/${location}`,
       this.config,
       {
         method: "DELETE",
@@ -314,12 +302,7 @@ class DatabaseClient {
   async list(): Promise<Database[]> {
     const response = await TursoClient.request<{
       databases: ApiDatabaseResponse[];
-    }>(
-      this.config.org
-        ? `organizations/${this.config.org}/databases`
-        : "databases",
-      this.config
-    );
+    }>(`organizations/${this.config.org}/databases`, this.config);
 
     return (response.databases ?? []).map((db) => this.formatResponse(db));
   }
@@ -327,12 +310,7 @@ class DatabaseClient {
   async get(name: string): Promise<Database> {
     const response = await TursoClient.request<{
       database: ApiDatabaseResponse;
-    }>(
-      this.config.org
-        ? `organizations/${this.config.org}/databases/${name}`
-        : `databases/${name}`,
-      this.config
-    );
+    }>(`organizations/${this.config.org}/databases/${name}`, this.config);
 
     return this.formatResponse(response.database);
   }
@@ -342,9 +320,7 @@ class DatabaseClient {
     options?: { image: "latest" | "canary"; group?: string }
   ): Promise<Database> {
     const response = await TursoClient.request<{ database: Database }>(
-      this.config.org
-        ? `organizations/${this.config.org}/databases/${name}`
-        : `databases/${name}`,
+      `organizations/${this.config.org}/databases/${name}`,
       this.config,
       {
         method: "POST",
@@ -363,9 +339,7 @@ class DatabaseClient {
 
   async update(name: string): Promise<void> {
     return await TursoClient.request(
-      this.config.org
-        ? `organizations/${this.config.org}/databases/${name}/update`
-        : `databases/${name}`,
+      `organizations/${this.config.org}/databases/${name}/update`,
       this.config,
       {
         method: "POST",
@@ -375,9 +349,7 @@ class DatabaseClient {
 
   async delete(name: string) {
     const response = await TursoClient.request<{ database: string }>(
-      this.config.org
-        ? `organizations/${this.config.org}/databases/${name}`
-        : `databases/${name}`,
+      `organizations/${this.config.org}/databases/${name}/update`,
       this.config,
       {
         method: "DELETE",
@@ -394,10 +366,6 @@ class DatabaseClient {
       authorization: "read-only" | "full-access";
     }
   ) {
-    const url = this.config.org
-      ? `organizations/${this.config.org}/databases/${dbName}/auth/tokens`
-      : `databases/${dbName}/auth/tokens`;
-
     const queryParams = new URLSearchParams();
 
     if (options?.expiration) {
@@ -409,7 +377,7 @@ class DatabaseClient {
     }
 
     const response = await TursoClient.request<{ jwt: string }>(
-      `${url}?${queryParams}`,
+      `organizations/${this.config.org}/databases/${dbName}/auth/tokens?${queryParams}`,
       this.config,
       {
         method: "POST",
@@ -421,9 +389,7 @@ class DatabaseClient {
 
   async rotateTokens(dbName: string): Promise<void> {
     return await TursoClient.request<void>(
-      this.config.org
-        ? `organizations/${this.config.org}/databases/${dbName}/auth/rotate`
-        : `databases/${dbName}/auth/rotate`,
+      `organizations/${this.config.org}/databases/${dbName}/auth/rotate`,
       this.config,
       {
         method: "POST",
@@ -435,10 +401,6 @@ class DatabaseClient {
     dbName: string,
     options?: { from?: Date | string; to?: Date | string }
   ): Promise<DatabaseUsage> {
-    const url = this.config.org
-      ? `organizations/${this.config.org}/databases/${dbName}/usage`
-      : `databases/${dbName}/usage`;
-
     const queryParams = new URLSearchParams();
 
     if (options?.from) {
@@ -453,7 +415,10 @@ class DatabaseClient {
       database: DatabaseUsage;
       instances: InstanceUsages;
       total: TotalUsage;
-    }>(`${url}?${queryParams}`, this.config);
+    }>(
+      `organizations/${this.config.org}/databases/${dbName}/usage?${queryParams}`,
+      this.config
+    );
 
     return response.database;
   }

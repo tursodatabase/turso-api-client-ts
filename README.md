@@ -1,17 +1,12 @@
 # @turso/api
 
-## Todo
-
-- Require `org` in `createClient`
-- Remove `/v1/:x` endpoints and only use `/organizations/...`
-- Maybe change to named args for all methods
-
 ## Usage
 
 ```ts
 import { createClient } from "@turso/api";
 
 const turso = createClient({
+  org: "", // Your personal account or organization slug
   token: "...",
 });
 ```
@@ -77,3 +72,7 @@ const usageStatsWithString = await turso.databases.usage("my-db", {
   to: "2023-02-01T00:00:00Z",
 });
 ```
+
+## Todo
+
+- Maybe change to named args for all methods
