@@ -2,6 +2,7 @@ import "whatwg-fetch";
 
 interface TursoConfig {
   token: string;
+  org?: string;
   baseUrl?: string;
 }
 
@@ -81,6 +82,7 @@ interface Organization {
 interface OrganizationMember {
   role: "owner" | "member";
   username: string;
+  email: string;
 }
 
 class OrganizationClient {
@@ -94,10 +96,10 @@ class OrganizationClient {
     return response.organizations ?? [];
   }
 
-  async members(slug: string): Promise<OrganizationMember[]> {
+  async members(): Promise<OrganizationMember[]> {
     const response = await TursoClient.request<{
       members: OrganizationMember[];
-    }>(`organisations/${slug}/members`, this.config);
+    }>(`organisations/${this.config.org}/members`, this.config);
 
     return response.members ?? [];
   }
@@ -170,33 +172,32 @@ interface Group {
 class GroupClient {
   constructor(private config: TursoConfig) {}
 
-  async list(orgSlug?: string): Promise<Group[]> {
+  async list(): Promise<Group[]> {
     const response = await TursoClient.request<{ groups: Group[] }>(
-      orgSlug ? `organizations/${orgSlug}/groups` : "groups",
+      this.config.org ? `organizations/${this.config.org}/groups` : "groups",
       this.config
     );
 
     return response.groups ?? [];
   }
 
-  async get(name: string, orgSlug?: string): Promise<Group> {
+  async get(name: string): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      orgSlug ? `organizations/${orgSlug}/groups/${name}` : `groups/${name}`,
+      this.config.org
+        ? `organizations/${this.config.org}/groups/${name}`
+        : `groups/${name}`,
       this.config
     );
 
     return response.group;
   }
 
-  async create(
-    data: {
-      name: string;
-      location: Array<keyof LocationKeys>;
-    },
-    orgSlug?: string
-  ): Promise<Group> {
+  async create(data: {
+    name: string;
+    location: Array<keyof LocationKeys>;
+  }): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      orgSlug ? `organizations/${orgSlug}/groups` : "groups",
+      this.config.org ? `organizations/${this.config.org}/groups` : "groups",
       this.config,
       {
         method: "POST",
@@ -210,9 +211,11 @@ class GroupClient {
     return response.group;
   }
 
-  async delete(name: string, orgSlug?: string): Promise<Group> {
+  async delete(name: string): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      orgSlug ? `organizations/${orgSlug}/groups/${name}` : `groups/${name}`,
+      this.config.org
+        ? `organizations/${this.config.org}/groups/${name}`
+        : `groups/${name}`,
       this.config,
       {
         method: "DELETE",
@@ -224,11 +227,10 @@ class GroupClient {
 
   async addLocation(
     groupName: string,
-    location: keyof LocationKeys,
-    orgSlug?: string
+    location: keyof LocationKeys
   ): Promise<Group> {
-    const endpoint = orgSlug
-      ? `organizations/${orgSlug}/groups/${groupName}/locations/${location}`
+    const endpoint = this.config.org
+      ? `organizations/${this.config.org}/groups/${groupName}/locations/${location}`
       : `groups/${groupName}/locations/${location}`;
 
     const response = await TursoClient.request<{ group: Group }>(
@@ -244,11 +246,10 @@ class GroupClient {
 
   async removeLocation(
     groupName: string,
-    location: keyof LocationKeys,
-    orgSlug?: string
+    location: keyof LocationKeys
   ): Promise<Group> {
-    const endpoint = orgSlug
-      ? `organizations/${orgSlug}/groups/${groupName}/locations/${location}`
+    const endpoint = this.config.org
+      ? `organizations/${this.config.org}/groups/${groupName}/locations/${location}`
       : `groups/${groupName}/locations/${location}`;
 
     const response = await TursoClient.request<{ group: Group }>(
@@ -263,12 +264,225 @@ class GroupClient {
   }
 }
 
+interface ApiDatabaseResponse extends Database {
+  Name: string;
+  DbId: string;
+  Hostname: string;
+}
+
+interface Database {
+  name: string;
+  id: string;
+  hostname: string;
+  regions?: Array<keyof LocationKeys>;
+  primaryRegion?: keyof LocationKeys;
+  type: string;
+  version: string;
+  group?: string;
+}
+
+interface DatabaseInstanceUsageDetail {
+  rows_read: number;
+  rows_written: number;
+  storage_bytes: number;
+}
+
+interface DatabaseInstanceUsage {
+  uuid: string;
+  usage: DatabaseInstanceUsageDetail;
+}
+
+interface DatabaseUsage {
+  uuid: string;
+  instances: DatabaseInstanceUsage[];
+  usage: DatabaseInstanceUsageDetail;
+}
+
+interface InstanceUsages {
+  [instanceUuid: string]: DatabaseInstanceUsageDetail;
+}
+
+interface TotalUsage {
+  rows_read: number;
+  rows_written: number;
+  storage_bytes: number;
+}
+
+class DatabaseClient {
+  constructor(private config: TursoConfig) {}
+
+  async list(): Promise<Database[]> {
+    const response = await TursoClient.request<{
+      databases: ApiDatabaseResponse[];
+    }>(
+      this.config.org
+        ? `organizations/${this.config.org}/databases`
+        : "databases",
+      this.config
+    );
+
+    return (response.databases ?? []).map((db) => this.formatResponse(db));
+  }
+
+  async get(name: string): Promise<Database> {
+    const response = await TursoClient.request<{
+      database: ApiDatabaseResponse;
+    }>(
+      this.config.org
+        ? `organizations/${this.config.org}/databases/${name}`
+        : `databases/${name}`,
+      this.config
+    );
+
+    return this.formatResponse(response.database);
+  }
+
+  async create(
+    name: string,
+    options?: { image: "latest" | "canary"; group?: string }
+  ): Promise<Database> {
+    const response = await TursoClient.request<{ database: Database }>(
+      this.config.org
+        ? `organizations/${this.config.org}/databases/${name}`
+        : `databases/${name}`,
+      this.config,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          ...options,
+        }),
+      }
+    );
+
+    return response.database;
+  }
+
+  async update(name: string): Promise<void> {
+    return await TursoClient.request(
+      this.config.org
+        ? `organizations/${this.config.org}/databases/${name}/update`
+        : `databases/${name}`,
+      this.config,
+      {
+        method: "POST",
+      }
+    );
+  }
+
+  async delete(name: string) {
+    const response = await TursoClient.request<{ database: string }>(
+      this.config.org
+        ? `organizations/${this.config.org}/databases/${name}`
+        : `databases/${name}`,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
+
+    return response;
+  }
+
+  async createToken(
+    dbName: string,
+    options?: {
+      expiration: string;
+      authorization: "read-only" | "full-access";
+    }
+  ) {
+    const url = this.config.org
+      ? `organizations/${this.config.org}/databases/${dbName}/auth/tokens`
+      : `databases/${dbName}/auth/tokens`;
+
+    const queryParams = new URLSearchParams();
+
+    if (options?.expiration) {
+      queryParams.set("expiration", options.expiration);
+    }
+
+    if (options?.authorization) {
+      queryParams.set("authorization", options.authorization);
+    }
+
+    const response = await TursoClient.request<{ jwt: string }>(
+      `${url}?${queryParams}`,
+      this.config,
+      {
+        method: "POST",
+      }
+    );
+
+    return response;
+  }
+
+  async rotateTokens(dbName: string): Promise<void> {
+    return await TursoClient.request<void>(
+      this.config.org
+        ? `organizations/${this.config.org}/databases/${dbName}/auth/rotate`
+        : `databases/${dbName}/auth/rotate`,
+      this.config,
+      {
+        method: "POST",
+      }
+    );
+  }
+
+  async usage(
+    dbName: string,
+    options?: { from?: Date | string; to?: Date | string }
+  ): Promise<DatabaseUsage> {
+    const url = this.config.org
+      ? `organizations/${this.config.org}/databases/${dbName}/usage`
+      : `databases/${dbName}/usage`;
+
+    const queryParams = new URLSearchParams();
+
+    if (options?.from) {
+      queryParams.set("from", this.formatDateParameter(options.from));
+    }
+
+    if (options?.to) {
+      queryParams.set("to", this.formatDateParameter(options.to));
+    }
+
+    const response = await TursoClient.request<{
+      database: DatabaseUsage;
+      instances: InstanceUsages;
+      total: TotalUsage;
+    }>(`${url}?${queryParams}`, this.config);
+
+    return response.database;
+  }
+
+  private formatDateParameter(date: Date | string): string {
+    return date instanceof Date ? date.toISOString() : date;
+  }
+
+  private formatResponse(db: ApiDatabaseResponse): Database {
+    return {
+      name: db.Name,
+      id: db.DbId,
+      hostname: db.Hostname,
+      regions: db.regions,
+      primaryRegion: db.primaryRegion,
+      type: db.type,
+      version: db.version,
+      group: db.group,
+    };
+  }
+}
+
 class TursoClient {
   private config: TursoConfig;
   public apiTokens: ApiTokenClient;
   public organizations: OrganizationClient;
   public locations: LocationClient;
   public groups: GroupClient;
+  public databases: DatabaseClient;
 
   constructor(config: TursoConfig) {
     this.config = {
@@ -280,6 +494,7 @@ class TursoClient {
     this.organizations = new OrganizationClient(this.config);
     this.locations = new LocationClient(this.config);
     this.groups = new GroupClient(this.config);
+    this.databases = new DatabaseClient(this.config);
   }
 
   static async request<T>(
@@ -287,11 +502,12 @@ class TursoClient {
     config: TursoConfig,
     options: RequestInit = {}
   ) {
-    const response = await fetch(new URL(`/v1/${url}`, config.baseUrl), {
+    const response = await fetch(new URL(url, config.baseUrl), {
       ...options,
       headers: {
         ...options.headers,
         Authorization: `Bearer ${config.token}`,
+        "User-Agent": "JS SDK",
       },
     });
 
