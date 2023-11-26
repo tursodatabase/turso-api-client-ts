@@ -190,10 +190,10 @@ class GroupClient {
     return response.group;
   }
 
-  async create(data: {
-    name: string;
-    location: Array<keyof LocationKeys>;
-  }): Promise<Group> {
+  async create(
+    name: string,
+    location?: Array<keyof LocationKeys>
+  ): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
       `organizations/${this.config.org}/groups`,
       this.config,
@@ -202,7 +202,7 @@ class GroupClient {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ name, location }),
       }
     );
 

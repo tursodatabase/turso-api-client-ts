@@ -23,10 +23,7 @@ const locations = await turso.locations.list();
 ```ts
 const groups = await turso.groups.list();
 const group = await turso.groups.get("default");
-const group = await turso.groups.create({
-  name: "customgroup",
-  location: "ams",
-});
+const group = await turso.groups.create("customgroup", "ams");
 const group = await turso.groups.delete("customgroup");
 const group = await turso.groups.addLocation("default", "lhr");
 const group = await turso.groups.removeLocation("default", "lhr");
@@ -76,3 +73,7 @@ const usageStatsWithString = await turso.databases.usage("my-db", {
 ## Todo
 
 - Maybe change to named args for all methods
+- Group::create `locations` array
+- Add instances API
+  - Add instance when creating database (CLI behaviour)
+  - Add support for random name?
