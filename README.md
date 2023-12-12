@@ -13,11 +13,20 @@ const turso = createClient({
 
 ```ts
 const organizations = await turso.organizations.list();
+const orgMembers = await turso.organizations.update({ overages: true });
+const orgMembers = await turso.organizations.delete();
 const orgMembers = await turso.organizations.members();
+const orgMembers = await turso.organizations.addMember("username", "admin");
+const orgMembers = await turso.organizations.removeMember("username");
+const orgMembers = await turso.organizations.inviteUser(
+  "jamie@turso.tech",
+  "admin"
+);
 ```
 
 ```ts
 const locations = await turso.locations.list();
+const closest = await turso.locations.closest();
 ```
 
 ```ts
@@ -27,6 +36,12 @@ const group = await turso.groups.create("customgroup", "ams");
 const group = await turso.groups.delete("customgroup");
 const group = await turso.groups.addLocation("default", "lhr");
 const group = await turso.groups.removeLocation("default", "lhr");
+const token = await turso.groups.createToken("default");
+const token = await turso.groups.createToken("default", {
+  expiration: "1w2d6h3n",
+  authorization: "full-access",
+});
+const token = await turso.groups.rotateTokens("default");
 ```
 
 ```ts
@@ -47,7 +62,7 @@ const database = await turso.databases.create("db-name", {
   group: "my-group",
 });
 
-const database = await turso.databases.update("my-db");
+const database = await turso.databases.updateVersion("my-db");
 
 const database = await turso.databases.delete("my-db");
 
@@ -73,7 +88,3 @@ const usageStatsWithString = await turso.databases.usage("my-db", {
 ## Todo
 
 - Maybe change to named args for all methods
-- Group::create `locations` array
-- Add instances API
-  - Add instance when creating database (CLI behaviour)
-  - Add support for random name?

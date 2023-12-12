@@ -80,9 +80,21 @@ interface Organization {
 }
 
 interface OrganizationMember {
-  role: "owner" | "member";
+  role: "owner" | "admin" | "member";
   username: string;
   email: string;
+}
+
+interface OrganizationInvite {
+  ID: number;
+  CreatedAt: string;
+  UpdatedAt: string;
+  DeletedAt: string;
+  Role: "admin" | "member";
+  Email: string;
+  OrganizationID: number;
+  Organization: Organization;
+  Accepted: boolean;
 }
 
 class OrganizationClient {
@@ -96,12 +108,61 @@ class OrganizationClient {
     return response.organizations ?? [];
   }
 
+  async update(options: { overages: boolean }): Promise<Organization> {
+    const response = await TursoClient.request<{
+      organization: Organization;
+    }>("", this.config, {
+      method: "POST",
+      body: JSON.stringify(options),
+    });
+
+    return response.organization ?? null;
+  }
+
+  async delete(): Promise<void> {
+    return TursoClient.request("", this.config, {
+      method: "DELETE",
+    });
+  }
+
   async members(): Promise<OrganizationMember[]> {
     const response = await TursoClient.request<{
       members: OrganizationMember[];
     }>(`organisations/${this.config.org}/members`, this.config);
 
     return response.members ?? [];
+  }
+
+  async addMember(
+    username: string,
+    role?: "admin" | "member"
+  ): Promise<{ member: string; role: "admin" | "member" }> {
+    return TursoClient.request(`members/${username}`, this.config, {
+      method: "POST",
+      body: JSON.stringify({ member: username, role: role ? role : "member" }),
+    });
+  }
+
+  async removeMember(username: string): Promise<{ member: string }> {
+    return TursoClient.request(`members/${username}`, this.config, {
+      method: "DELETE",
+    });
+  }
+
+  async inviteUser(
+    email: string,
+    role?: "admin" | "member"
+  ): Promise<OrganizationInvite> {
+    const response = await TursoClient.request<{ invited: OrganizationInvite }>(
+      "invites",
+      this.config,
+      {
+        method: "POST",
+        body: JSON.stringify({ email, role: role ? role : "member" }),
+      }
+    );
+
+    return response.invited;
   }
 }
 
@@ -160,6 +221,13 @@ class LocationClient {
       code,
       description,
     }));
+  }
+
+  async closest(): Promise<{
+    server: keyof LocationKeys;
+    client: keyof LocationKeys;
+  }> {
+    return fetch("https://region.turso.io/").then((res) => res.json());
   }
 }
 
@@ -250,6 +318,44 @@ class GroupClient {
 
     return response.group;
   }
+
+  async createToken(
+    groupName: string,
+    options?: {
+      expiration: string;
+      authorization: "read-only" | "full-access";
+    }
+  ) {
+    const queryParams = new URLSearchParams();
+
+    if (options?.expiration) {
+      queryParams.set("expiration", options.expiration);
+    }
+
+    if (options?.authorization) {
+      queryParams.set("authorization", options.authorization);
+    }
+
+    const response = await TursoClient.request<{ jwt: string }>(
+      `organizations/${this.config.org}/groups/${groupName}/auth/tokens?${queryParams}`,
+      this.config,
+      {
+        method: "POST",
+      }
+    );
+
+    return response;
+  }
+
+  async rotateTokens(groupName: string): Promise<void> {
+    return await TursoClient.request<void>(
+      `organizations/${this.config.org}/groups/${groupName}/auth/rotate`,
+      this.config,
+      {
+        method: "POST",
+      }
+    );
+  }
 }
 
 interface ApiDatabaseResponse extends Database {
@@ -337,7 +443,7 @@ class DatabaseClient {
     return response.database;
   }
 
-  async update(name: string): Promise<void> {
+  async updateVersion(name: string): Promise<void> {
     return await TursoClient.request(
       `organizations/${this.config.org}/databases/${name}/update`,
       this.config,
@@ -349,7 +455,7 @@ class DatabaseClient {
 
   async delete(name: string) {
     const response = await TursoClient.request<{ database: string }>(
-      `organizations/${this.config.org}/databases/${name}/update`,
+      `organizations/${this.config.org}/databases/${name}`,
       this.config,
       {
         method: "DELETE",
