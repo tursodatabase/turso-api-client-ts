@@ -66,6 +66,9 @@ const database = await turso.databases.updateVersion("my-db");
 
 const database = await turso.databases.delete("my-db");
 
+const instances = await turso.databases.listInstances("my-db");
+const instances = await turso.databases.getInstance("my-db", "lhr");
+
 const token = await turso.databases.createToken("my-db");
 const token = await turso.databases.createToken("my-db", {
   expiration: "1w2d6h3n",

@@ -402,6 +402,14 @@ interface TotalUsage {
   storage_bytes: number;
 }
 
+interface DatabaseInstance {
+  uuid: string;
+  name: keyof LocationKeys;
+  type: "primary" | "replica";
+  region: keyof LocationKeys;
+  hostname: string;
+}
+
 class DatabaseClient {
   constructor(private config: TursoConfig) {}
 
@@ -413,20 +421,20 @@ class DatabaseClient {
     return (response.databases ?? []).map((db) => this.formatResponse(db));
   }
 
-  async get(name: string): Promise<Database> {
+  async get(dbName: string): Promise<Database> {
     const response = await TursoClient.request<{
       database: ApiDatabaseResponse;
-    }>(`organizations/${this.config.org}/databases/${name}`, this.config);
+    }>(`organizations/${this.config.org}/databases/${dbName}`, this.config);
 
     return this.formatResponse(response.database);
   }
 
   async create(
-    name: string,
+    dbName: string,
     options?: { image: "latest" | "canary"; group?: string }
   ): Promise<Database> {
     const response = await TursoClient.request<{ database: Database }>(
-      `organizations/${this.config.org}/databases/${name}`,
+      `organizations/${this.config.org}/databases`,
       this.config,
       {
         method: "POST",
@@ -434,7 +442,7 @@ class DatabaseClient {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          name,
+          name: dbName,
           ...options,
         }),
       }
@@ -443,9 +451,9 @@ class DatabaseClient {
     return response.database;
   }
 
-  async updateVersion(name: string): Promise<void> {
+  async updateVersion(dbName: string): Promise<void> {
     return await TursoClient.request(
-      `organizations/${this.config.org}/databases/${name}/update`,
+      `organizations/${this.config.org}/databases/${dbName}/update`,
       this.config,
       {
         method: "POST",
@@ -453,9 +461,9 @@ class DatabaseClient {
     );
   }
 
-  async delete(name: string) {
+  async delete(dbName: string) {
     const response = await TursoClient.request<{ database: string }>(
-      `organizations/${this.config.org}/databases/${name}`,
+      `organizations/${this.config.org}/databases/${dbName}`,
       this.config,
       {
         method: "DELETE",
@@ -463,6 +471,31 @@ class DatabaseClient {
     );
 
     return response;
+  }
+
+  async listInstances(dbName: string): Promise<DatabaseInstance[]> {
+    const response = await TursoClient.request<{
+      instances: DatabaseInstance[];
+    }>(
+      `organizations/${this.config.org}/databases/${dbName}/instances`,
+      this.config
+    );
+
+    return response.instances ?? [];
+  }
+
+  async getInstance(
+    dbName: string,
+    instanceName: keyof LocationKeys
+  ): Promise<DatabaseInstance> {
+    const response = await TursoClient.request<{
+      instance: DatabaseInstance;
+    }>(
+      `organizations/${this.config.org}/databases/${dbName}/instances/${instanceName}`,
+      this.config
+    );
+
+    return response.instance ?? null;
   }
 
   async createToken(
