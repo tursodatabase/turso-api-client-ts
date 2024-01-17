@@ -1,9 +1,11 @@
-# @turso/api
+# @tursodatabase/api
+
+⚠️ This SDK is still in development and is not ready for production use.
 
 ## Usage
 
 ```ts
-import { createClient } from "@turso/api";
+import { createClient } from "@tursodatabase/api";
 
 const turso = createClient({
   org: "", // Your personal account or organization slug

@@ -40,7 +40,7 @@ export class TursoClient {
       headers: {
         ...options.headers,
         Authorization: `Bearer ${config.token}`,
-        "User-Agent": "@turso/api",
+        "User-Agent": "@tursodatabase/api",
       },
     });
 
