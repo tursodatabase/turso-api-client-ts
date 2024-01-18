@@ -75,8 +75,26 @@ export class DatabaseClient {
 
   async create(
     dbName: string,
-    options?: { image: "latest" | "canary"; group?: string }
+    options?: {
+      image: "latest" | "canary";
+      group?: string;
+      seed?: {
+        type: "database" | "dump";
+        name?: string;
+        url?: string;
+        timestamp?: string;
+      };
+    }
   ): Promise<Database> {
+    if (options?.seed) {
+      if (options.seed.type === "database" && !options.seed.name) {
+        throw new Error("Seed name is required when type is 'database'");
+      }
+      if (options.seed.type === "dump" && !options.seed.url) {
+        throw new Error("Seed URL is required when type is 'dump'");
+      }
+    }
+
     const response = await TursoClient.request<{ database: Database }>(
       `organizations/${this.config.org}/databases`,
       this.config,
