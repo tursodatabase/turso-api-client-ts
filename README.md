@@ -63,6 +63,21 @@ const database = await turso.databases.create("db-name", {
   image: "canary",
   group: "my-group",
 });
+const database = await turso.databases.create("db-name", {
+  group: "my-group",
+  seed: {
+    type: "database",
+    name: "my-existing-db",
+  },
+});
+const database = await turso.databases.create("db-name", {
+  group: "my-group",
+  seed: {
+    type: "database",
+    name: "my-existing-db",
+    timestamp: "2021-01-01T00:00:00Z", // or new Date("2021-01-01T00:00:00Z")
+  },
+});
 
 const database = await turso.databases.updateVersion("my-db");
 
