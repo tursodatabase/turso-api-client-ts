@@ -82,7 +82,7 @@ export class DatabaseClient {
         type: "database" | "dump";
         name?: string;
         url?: string;
-        timestamp?: string;
+        timestamp?: string | Date;
       };
     }
   ): Promise<Database> {
@@ -93,6 +93,10 @@ export class DatabaseClient {
       if (options.seed.type === "dump" && !options.seed.url) {
         throw new Error("Seed URL is required when type is 'dump'");
       }
+    }
+
+    if (options?.seed?.timestamp) {
+      options.seed.timestamp = this.formatDateParameter(options.seed.timestamp);
     }
 
     const response = await TursoClient.request<{ database: Database }>(
