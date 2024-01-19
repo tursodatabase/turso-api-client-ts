@@ -19,7 +19,7 @@ export class TursoClient {
     }
 
     this.config = {
-      baseUrl: "https://api.turso.tech/v1",
+      baseUrl: "https://api.turso.tech/v1/",
       ...config,
     };
 
