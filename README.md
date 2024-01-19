@@ -34,7 +34,10 @@ const closest = await turso.locations.closest();
 ```ts
 const groups = await turso.groups.list();
 const group = await turso.groups.get("default");
-const group = await turso.groups.create("customgroup", "ams");
+const group = await turso.groups.create("customgroup", "lhr");
+const group = await turso.groups.create("customgroup", "ams", {
+  extensions: "all", // or ["uuid", "vector"]
+});
 const group = await turso.groups.delete("customgroup");
 const group = await turso.groups.addLocation("default", "lhr");
 const group = await turso.groups.removeLocation("default", "lhr");

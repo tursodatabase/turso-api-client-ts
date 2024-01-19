@@ -8,6 +8,18 @@ export interface Group {
   primary: keyof LocationKeys;
 }
 
+export type ExtensionType =
+  | "vector"
+  | "vss"
+  | "crypto"
+  | "fuzzy"
+  | "math"
+  | "stats"
+  | "text"
+  | "unicode"
+  | "uuid"
+  | "regexp";
+
 export class GroupClient {
   constructor(private config: TursoConfig) {}
 
@@ -31,7 +43,8 @@ export class GroupClient {
 
   async create(
     name: string,
-    location?: Array<keyof LocationKeys>
+    location: keyof LocationKeys,
+    options?: { extensions?: Array<ExtensionType> | "all" }
   ): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
       `organizations/${this.config.org}/groups`,
@@ -41,7 +54,11 @@ export class GroupClient {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ name, location }),
+        body: JSON.stringify({
+          name,
+          location,
+          ...options,
+        }),
       }
     );
 
