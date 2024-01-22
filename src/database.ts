@@ -99,22 +99,20 @@ export class DatabaseClient {
       options.seed.timestamp = this.formatDateParameter(options.seed.timestamp);
     }
 
-    const response = await TursoClient.request<{ database: Database }>(
-      `organizations/${this.config.org}/databases`,
-      this.config,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          name: dbName,
-          ...options,
-        }),
-      }
-    );
+    const response = await TursoClient.request<{
+      database: ApiDatabaseResponse;
+    }>(`organizations/${this.config.org}/databases`, this.config, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: dbName,
+        ...options,
+      }),
+    });
 
-    return response.database;
+    return this.formatResponse(response.database);
   }
 
   async updateVersion(dbName: string): Promise<void> {
