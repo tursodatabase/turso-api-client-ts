@@ -13,11 +13,9 @@ export interface Database {
   group?: string;
 }
 
-export interface ApiDatabaseResponse extends Database {
-  Name: string;
-  DbId: string;
-  Hostname: string;
-}
+export interface ApiDatabaseResponse
+  extends Database,
+    ApiCreateDatabaseResponse {}
 
 export interface ApiCreateDatabaseResponse {
   DbId: string;
@@ -88,7 +86,7 @@ export class DatabaseClient {
   async create(
     dbName: string,
     options?: {
-      image: "latest" | "canary";
+      image?: "latest" | "canary";
       group?: string;
       seed?: {
         type: "database" | "dump";
