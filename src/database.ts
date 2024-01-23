@@ -13,10 +13,20 @@ export interface Database {
   group?: string;
 }
 
-export interface ApiDatabaseResponse extends Database {
-  Name: string;
+export interface ApiDatabaseResponse
+  extends Database,
+    ApiCreateDatabaseResponse {}
+
+export interface ApiCreateDatabaseResponse {
   DbId: string;
   Hostname: string;
+  Name: string;
+}
+
+export interface DatabaseCreateResponse {
+  name: string;
+  id: string;
+  hostname: string;
 }
 
 export interface DatabaseInstanceUsageDetail {
@@ -76,7 +86,7 @@ export class DatabaseClient {
   async create(
     dbName: string,
     options?: {
-      image: "latest" | "canary";
+      image?: "latest" | "canary";
       group?: string;
       seed?: {
         type: "database" | "dump";
@@ -85,7 +95,7 @@ export class DatabaseClient {
         timestamp?: string | Date;
       };
     }
-  ): Promise<Database> {
+  ): Promise<DatabaseCreateResponse> {
     if (options?.seed) {
       if (options.seed.type === "database" && !options.seed.name) {
         throw new Error("Seed name is required when type is 'database'");
@@ -99,22 +109,20 @@ export class DatabaseClient {
       options.seed.timestamp = this.formatDateParameter(options.seed.timestamp);
     }
 
-    const response = await TursoClient.request<{ database: Database }>(
-      `organizations/${this.config.org}/databases`,
-      this.config,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          name: dbName,
-          ...options,
-        }),
-      }
-    );
+    const response = await TursoClient.request<{
+      database: ApiCreateDatabaseResponse;
+    }>(`organizations/${this.config.org}/databases`, this.config, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: dbName,
+        ...options,
+      }),
+    });
 
-    return response.database;
+    return this.formatCreateResponse(response.database);
   }
 
   async updateVersion(dbName: string): Promise<void> {
@@ -242,6 +250,16 @@ export class DatabaseClient {
       type: db.type,
       version: db.version,
       group: db.group,
+    };
+  }
+
+  private formatCreateResponse(
+    db: ApiCreateDatabaseResponse
+  ): DatabaseCreateResponse {
+    return {
+      id: db.DbId,
+      hostname: db.Hostname,
+      name: db.Name,
     };
   }
 }
