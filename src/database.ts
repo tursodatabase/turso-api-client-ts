@@ -1,3 +1,5 @@
+import FormData from "form-data";
+
 import { LocationKeys } from "./location";
 import { TursoConfig } from "./config";
 import { TursoClient } from "./client";
@@ -226,6 +228,24 @@ export class DatabaseClient {
     );
 
     return response.database;
+  }
+
+  async uploadDump(file: File): Promise<{ url: string }> {
+    const form = new FormData();
+
+    form.append("file", file);
+
+    const response = await TursoClient.request<{ dump_url: string }>(
+      `organizations/${this.config.org}/databases/dumps`,
+      this.config,
+      {
+        method: "POST",
+        headers: form.getHeaders(),
+        body: form as any,
+      }
+    );
+
+    return { url: response.dump_url };
   }
 
   private formatDateParameter(date: Date | string): string {
