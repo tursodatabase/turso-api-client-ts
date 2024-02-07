@@ -5,6 +5,23 @@ import { LocationClient } from "./location";
 import { GroupClient } from "./group";
 import { DatabaseClient } from "./database";
 
+interface ApiErrorResponse {
+  error: string;
+}
+
+interface AdditionalInfo {
+  status?: number;
+}
+
+export class TursoClientError extends Error {
+  status?: number;
+  constructor(message: string, additionalInfo?: AdditionalInfo) {
+    super(message);
+    this.name = "TursoClientError";
+    this.status = additionalInfo?.status;
+  }
+}
+
 export class TursoClient {
   private config: TursoConfig;
   public apiTokens: ApiTokenClient;
@@ -45,7 +62,13 @@ export class TursoClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Something went wrong! Status ${response.status}`);
+      const errorResponse = (await response.json().catch(() => {
+        throw new Error(`Something went wrong! Status ${response.status}`);
+      })) as ApiErrorResponse;
+
+      throw new TursoClientError(errorResponse.error, {
+        status: response.status,
+      });
     }
 
     return response.json() as T;
