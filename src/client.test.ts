@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TursoClient, createClient } from "./client";
+import { TursoClient, TursoClientError, createClient } from "./client";
 
 describe("TursoClient", () => {
   it("should throw an error if no API token is provided", () => {
@@ -16,6 +16,23 @@ describe("TursoClient", () => {
     const client = new TursoClient(config);
 
     expect(client).toBeInstanceOf(TursoClient);
+  });
+
+  it("should throw an error message that will match with API's error message", async () => {
+    const config = { org: "turso", token: "abc" };
+    const client = new TursoClient(config);
+
+    const error = await client.databases
+      .get("databaseName")
+      .catch((err: Error) => err);
+
+    expect(error).toBeInstanceOf(TursoClientError);
+    if (error instanceof TursoClientError) {
+      expect(error.message).toBe(
+        "token contains an invalid number of segments"
+      );
+      expect(error.status).toBe(401);
+    }
   });
 });
 
