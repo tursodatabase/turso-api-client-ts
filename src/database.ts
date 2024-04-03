@@ -70,6 +70,10 @@ export interface DatabaseInstance {
   hostname: string;
 }
 
+type MultiDBSchemaOptions =
+  | { is_schema: boolean; schema?: never }
+  | { is_schema?: never; schema: string };
+
 export class DatabaseClient {
   constructor(private config: TursoConfig) {}
 
@@ -100,10 +104,12 @@ export class DatabaseClient {
         url?: string;
         timestamp?: string | Date;
       };
-      is_schema?: boolean;
-      schema?: string;
-    }
+    } & MultiDBSchemaOptions
   ): Promise<DatabaseCreateResponse> {
+    if (options?.is_schema !== undefined && options?.schema !== undefined) {
+      throw new Error("'is_schema' and 'schema' cannot both be provided");
+    }
+
     if (options?.seed) {
       if (options.seed.type === "database" && !options.seed.name) {
         throw new Error("Seed name is required when type is 'database'");
