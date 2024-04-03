@@ -248,7 +248,7 @@ export class DatabaseClient {
     return date instanceof Date ? date.toISOString() : date;
   }
 
-  private formatResponse(db: ApiDatabaseResponse): Partial<Database> {
+  private formatResponse(db: ApiDatabaseResponse): Database {
     return {
       name: db.Name,
       id: db.DbId,
@@ -258,6 +258,12 @@ export class DatabaseClient {
       type: db.type,
       version: db.version,
       group: db.group,
+      sleeping: db.sleeping,
+      allow_attach: db.allow_attach,
+      block_reads: db.block_reads,
+      block_writes: db.block_writes,
+      schema: db.schema,
+      is_schema: db.is_schema,
     };
   }
 
