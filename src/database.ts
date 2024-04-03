@@ -11,6 +11,12 @@ export interface Database {
   type: string;
   version: string;
   group?: string;
+  sleeping: boolean;
+  allow_attach: boolean;
+  block_reads: boolean;
+  block_writes: boolean;
+  schema?: string;
+  is_schema: boolean;
 }
 
 export interface ApiDatabaseResponse
@@ -94,6 +100,8 @@ export class DatabaseClient {
         url?: string;
         timestamp?: string | Date;
       };
+      is_schema?: boolean;
+      schema?: string;
     }
   ): Promise<DatabaseCreateResponse> {
     if (options?.seed) {
@@ -240,7 +248,7 @@ export class DatabaseClient {
     return date instanceof Date ? date.toISOString() : date;
   }
 
-  private formatResponse(db: ApiDatabaseResponse): Database {
+  private formatResponse(db: ApiDatabaseResponse): Partial<Database> {
     return {
       name: db.Name,
       id: db.DbId,
