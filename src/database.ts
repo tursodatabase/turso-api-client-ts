@@ -11,6 +11,12 @@ export interface Database {
   type: string;
   version: string;
   group?: string;
+  sleeping: boolean;
+  allow_attach: boolean;
+  block_reads: boolean;
+  block_writes: boolean;
+  schema?: string;
+  is_schema: boolean;
 }
 
 export interface ApiDatabaseResponse
@@ -64,6 +70,10 @@ export interface DatabaseInstance {
   hostname: string;
 }
 
+type MultiDBSchemaOptions =
+  | { is_schema: boolean; schema?: never }
+  | { is_schema?: never; schema: string };
+
 export class DatabaseClient {
   constructor(private config: TursoConfig) {}
 
@@ -94,8 +104,12 @@ export class DatabaseClient {
         url?: string;
         timestamp?: string | Date;
       };
-    }
+    } & MultiDBSchemaOptions
   ): Promise<DatabaseCreateResponse> {
+    if (options?.is_schema !== undefined && options?.schema !== undefined) {
+      throw new Error("'is_schema' and 'schema' cannot both be provided");
+    }
+
     if (options?.seed) {
       if (options.seed.type === "database" && !options.seed.name) {
         throw new Error("Seed name is required when type is 'database'");
@@ -250,6 +264,12 @@ export class DatabaseClient {
       type: db.type,
       version: db.version,
       group: db.group,
+      sleeping: db.sleeping,
+      allow_attach: db.allow_attach,
+      block_reads: db.block_reads,
+      block_writes: db.block_writes,
+      schema: db.schema,
+      is_schema: db.is_schema,
     };
   }
 
