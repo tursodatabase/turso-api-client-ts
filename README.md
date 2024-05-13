@@ -20,10 +20,11 @@ const orgMembers = await turso.organizations.delete();
 const orgMembers = await turso.organizations.members();
 const orgMembers = await turso.organizations.addMember("username", "admin");
 const orgMembers = await turso.organizations.removeMember("username");
-const orgMembers = await turso.organizations.inviteUser(
+const invite = await turso.organizations.inviteUser(
   "jamie@turso.tech",
   "admin"
 );
+await turso.organizations.deleteInvite("jamie@turso.tech");
 const invoices = await turso.organizations.invoices();
 ```
 
