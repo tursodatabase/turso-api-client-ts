@@ -72,7 +72,20 @@ export interface DatabaseInstance {
 
 type MultiDBSchemaOptions =
   | { is_schema: boolean; schema?: never }
-  | { is_schema?: never; schema: string };
+  | { is_schema?: never; schema: string }
+  | {};
+
+function hasIsSchemaOption(
+  options: any
+): options is { is_schema: boolean; schema?: never } {
+  return options !== undefined && options.is_schema !== undefined;
+}
+
+function hasSchemaOption(
+  options: any
+): options is { is_schema?: never; schema: string } {
+  return options !== undefined && options.schema !== undefined;
+}
 
 export class DatabaseClient {
   constructor(private config: TursoConfig) {}
@@ -106,7 +119,7 @@ export class DatabaseClient {
       };
     } & MultiDBSchemaOptions
   ): Promise<DatabaseCreateResponse> {
-    if (options?.is_schema !== undefined && options?.schema !== undefined) {
+    if (hasIsSchemaOption(options) && hasSchemaOption(options)) {
       throw new Error("'is_schema' and 'schema' cannot both be provided");
     }
 

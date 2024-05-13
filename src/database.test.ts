@@ -22,4 +22,20 @@ describe("DatabaseClient", () => {
       } as unknown as (typeof client.create.arguments)[1])
     ).rejects.toThrow("'is_schema' and 'schema' cannot both be provided");
   });
+
+  it('throws error if seed type is "database" and name is missing', async () => {
+    const options = { seed: { type: "database" } };
+    // @ts-expect-error
+    await expect(client.create("testDB", options)).rejects.toThrow(
+      "Seed name is required when type is 'database'"
+    );
+  });
+
+  it('throws error if seed type is "dump" and url is missing', async () => {
+    const options = { seed: { type: "dump" } };
+    // @ts-expect-error
+    await expect(client.create("testDB", options)).rejects.toThrow(
+      "Seed URL is required when type is 'dump'"
+    );
+  });
 });
