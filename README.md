@@ -45,7 +45,7 @@ const group = await turso.groups.addLocation("default", "lhr");
 const group = await turso.groups.removeLocation("default", "lhr");
 const token = await turso.groups.createToken("default");
 const token = await turso.groups.createToken("default", {
-  expiration: "1w2d6h3n",
+  expiration: "1w2d6h3m",
   authorization: "full-access",
 });
 const token = await turso.groups.rotateTokens("default");
