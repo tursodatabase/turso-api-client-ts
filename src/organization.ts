@@ -28,6 +28,15 @@ export interface OrganizationInvite {
   Accepted: boolean;
 }
 
+export interface Invoice {
+  invoice_number: string;
+  amount_due: string;
+  due_date: string;
+  paid_at: string;
+  payment_failed_at: string;
+  invoice_pdf: string;
+}
+
 export class OrganizationClient {
   constructor(private config: TursoConfig) {}
 
@@ -42,8 +51,8 @@ export class OrganizationClient {
   async update(options: { overages: boolean }): Promise<Organization> {
     const response = await TursoClient.request<{
       organization: Organization;
-    }>("", this.config, {
-      method: "POST",
+    }>(`organizations/${this.config.org}`, this.config, {
+      method: "PATCH",
       body: JSON.stringify(options),
     });
 
@@ -51,15 +60,19 @@ export class OrganizationClient {
   }
 
   async delete(): Promise<void> {
-    return TursoClient.request("", this.config, {
-      method: "DELETE",
-    });
+    return TursoClient.request(
+      `organizations/${this.config.org}`,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
   }
 
   async members(): Promise<OrganizationMember[]> {
     const response = await TursoClient.request<{
       members: OrganizationMember[];
-    }>(`organisations/${this.config.org}/members`, this.config);
+    }>(`organizations/${this.config.org}/members`, this.config);
 
     return response.members ?? [];
   }
@@ -68,16 +81,27 @@ export class OrganizationClient {
     username: string,
     role?: "admin" | "member"
   ): Promise<{ member: string; role: "admin" | "member" }> {
-    return TursoClient.request(`members/${username}`, this.config, {
-      method: "POST",
-      body: JSON.stringify({ member: username, role: role ? role : "member" }),
-    });
+    return TursoClient.request(
+      `organizations/${this.config.org}/members/${username}`,
+      this.config,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          member: username,
+          role: role ? role : "member",
+        }),
+      }
+    );
   }
 
   async removeMember(username: string): Promise<{ member: string }> {
-    return TursoClient.request(`members/${username}`, this.config, {
-      method: "DELETE",
-    });
+    return TursoClient.request(
+      `organizations/${this.config.org}/members/${username}`,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
   }
 
   async inviteUser(
@@ -85,7 +109,7 @@ export class OrganizationClient {
     role?: "admin" | "member"
   ): Promise<OrganizationInvite> {
     const response = await TursoClient.request<{ invited: OrganizationInvite }>(
-      "invites",
+      `organizations/${this.config.org}/invites`,
       this.config,
       {
         method: "POST",
@@ -94,5 +118,23 @@ export class OrganizationClient {
     );
 
     return response.invited;
+  }
+
+  async deleteInvite(email: string): Promise<OrganizationInvite> {
+    return TursoClient.request(
+      `organizations/${this.config.org}/invites/${email}`,
+      this.config,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  async invoices(): Promise<Invoice[]> {
+    const response = await TursoClient.request<{
+      invoices: Invoice[];
+    }>(`organizations/${this.config.org}/invoices`, this.config);
+
+    return response.invoices ?? [];
   }
 }

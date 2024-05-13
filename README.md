@@ -24,6 +24,7 @@ const orgMembers = await turso.organizations.inviteUser(
   "jamie@turso.tech",
   "admin"
 );
+const invoices = await turso.organizations.invoices();
 ```
 
 ```ts
@@ -80,6 +81,12 @@ const database = await turso.databases.create("db-name", {
     name: "my-existing-db",
     timestamp: "2021-01-01T00:00:00Z", // or new Date("2021-01-01T00:00:00Z")
   },
+});
+const database = await turso.databases.create("parent-db", {
+  is_schema: true,
+});
+const database = await turso.databases.create("child-db", {
+  schema: "parent-db",
 });
 
 const database = await turso.databases.updateVersion("my-db");
