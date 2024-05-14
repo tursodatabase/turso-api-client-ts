@@ -15,6 +15,7 @@ export type {
   TotalUsage,
   DatabaseInstance,
   DatabaseCreateTokenResponse,
+  DatabaseDeleteResponse,
 } from "./database";
 export type { Group, ExtensionType, GroupCreateTokenResponse } from "./group";
 export type {
@@ -29,4 +30,5 @@ export type {
   Invoice,
   OrganizationMemberRole,
   OrganizationAddMemberResponse,
+  OrganizationRemoveMemberResponse,
 } from "./organization";
