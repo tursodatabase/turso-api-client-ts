@@ -20,6 +20,10 @@ export type ExtensionType =
   | "uuid"
   | "regexp";
 
+export interface GroupCreateTokenResponse {
+  jwt: string;
+}
+
 export class GroupClient {
   constructor(private config: TursoConfig) {}
 
@@ -113,7 +117,7 @@ export class GroupClient {
       expiration: string;
       authorization: "read-only" | "full-access";
     }
-  ) {
+  ): Promise<GroupCreateTokenResponse> {
     const queryParams = new URLSearchParams();
 
     if (options?.expiration) {
@@ -124,7 +128,7 @@ export class GroupClient {
       queryParams.set("authorization", options.authorization);
     }
 
-    const response = await TursoClient.request<{ jwt: string }>(
+    const response = await TursoClient.request<GroupCreateTokenResponse>(
       `organizations/${this.config.org}/groups/${groupName}/auth/tokens?${queryParams}`,
       this.config,
       {

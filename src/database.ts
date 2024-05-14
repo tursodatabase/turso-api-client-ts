@@ -70,6 +70,14 @@ export interface DatabaseInstance {
   hostname: string;
 }
 
+export interface DatabaseCreateTokenResponse {
+  jwt: string;
+}
+
+export interface DatabaseDeleteResponse {
+  database: string;
+}
+
 type MultiDBSchemaOptions =
   | { is_schema: boolean; schema?: never }
   | { is_schema?: never; schema: string }
@@ -163,7 +171,7 @@ export class DatabaseClient {
   }
 
   async delete(dbName: string) {
-    const response = await TursoClient.request<{ database: string }>(
+    const response = await TursoClient.request<DatabaseDeleteResponse>(
       `organizations/${this.config.org}/databases/${dbName}`,
       this.config,
       {
@@ -205,7 +213,7 @@ export class DatabaseClient {
       expiration: string;
       authorization: "read-only" | "full-access";
     }
-  ) {
+  ): Promise<DatabaseCreateTokenResponse> {
     const queryParams = new URLSearchParams();
 
     if (options?.expiration) {
@@ -216,7 +224,7 @@ export class DatabaseClient {
       queryParams.set("authorization", options.authorization);
     }
 
-    const response = await TursoClient.request<{ jwt: string }>(
+    const response = await TursoClient.request<DatabaseCreateTokenResponse>(
       `organizations/${this.config.org}/databases/${dbName}/auth/tokens?${queryParams}`,
       this.config,
       {
