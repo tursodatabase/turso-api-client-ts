@@ -39,12 +39,12 @@ export interface Invoice {
 
 export type OrganizationMemberRole = "admin" | "member";
 
-export interface OrganizationAddMemberResponse {
+export interface OrganizationAddedMember {
   member: string;
   role: OrganizationMemberRole;
 }
 
-export interface OrganizationRemoveMemberResponse {
+export interface OrganizationRemovedMember {
   member: string;
 }
 
@@ -91,7 +91,7 @@ export class OrganizationClient {
   async addMember(
     username: string,
     role?: "admin" | "member"
-  ): Promise<OrganizationAddMemberResponse> {
+  ): Promise<OrganizationAddedMember> {
     return TursoClient.request(
       `organizations/${this.config.org}/members/${username}`,
       this.config,
@@ -105,9 +105,7 @@ export class OrganizationClient {
     );
   }
 
-  async removeMember(
-    username: string
-  ): Promise<OrganizationRemoveMemberResponse> {
+  async removeMember(username: string): Promise<OrganizationRemovedMember> {
     return TursoClient.request(
       `organizations/${this.config.org}/members/${username}`,
       this.config,

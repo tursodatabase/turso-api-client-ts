@@ -40,7 +40,7 @@ export type Location = {
   [K in keyof LocationKeys]: { code: K; description: LocationKeys[K] };
 }[keyof LocationKeys];
 
-export interface LocationClosestResponse {
+export interface ClosestLocation {
   server: keyof LocationKeys;
   client: keyof LocationKeys;
 }
@@ -63,7 +63,7 @@ export class LocationClient {
     }));
   }
 
-  async closest(): Promise<LocationClosestResponse> {
+  async closest(): Promise<ClosestLocation> {
     return fetch("https://region.turso.io/").then((res) => res.json());
   }
 }

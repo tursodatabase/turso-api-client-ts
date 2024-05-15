@@ -29,19 +29,19 @@ export interface ApiCreateDatabaseResponse {
   Name: string;
 }
 
-export interface DatabaseCreateResponse {
+export interface CreatedDatabase {
   name: string;
   id: string;
   hostname: string;
 }
 
-export interface DatabaseInstanceUsageDetail {
+interface DatabaseInstanceUsageDetail {
   rows_read: number;
   rows_written: number;
   storage_bytes: number;
 }
 
-export interface DatabaseInstanceUsage {
+interface DatabaseInstanceUsage {
   uuid: string;
   usage: DatabaseInstanceUsageDetail;
 }
@@ -70,12 +70,12 @@ export interface DatabaseInstance {
   hostname: string;
 }
 
-export interface DatabaseCreateTokenResponse {
-  jwt: string;
+export interface DeletedDatabase {
+  database: string;
 }
 
-export interface DatabaseDeleteResponse {
-  database: string;
+export interface DatabaseToken {
+  jwt: string;
 }
 
 type MultiDBSchemaOptions =
@@ -126,7 +126,7 @@ export class DatabaseClient {
         timestamp?: string | Date;
       };
     } & MultiDBSchemaOptions
-  ): Promise<DatabaseCreateResponse> {
+  ): Promise<CreatedDatabase> {
     if (hasIsSchemaOption(options) && hasSchemaOption(options)) {
       throw new Error("'is_schema' and 'schema' cannot both be provided");
     }
@@ -171,7 +171,7 @@ export class DatabaseClient {
   }
 
   async delete(dbName: string) {
-    const response = await TursoClient.request<DatabaseDeleteResponse>(
+    const response = await TursoClient.request<DeletedDatabase>(
       `organizations/${this.config.org}/databases/${dbName}`,
       this.config,
       {
@@ -213,7 +213,7 @@ export class DatabaseClient {
       expiration: string;
       authorization: "read-only" | "full-access";
     }
-  ): Promise<DatabaseCreateTokenResponse> {
+  ): Promise<DatabaseToken> {
     const queryParams = new URLSearchParams();
 
     if (options?.expiration) {
@@ -224,7 +224,7 @@ export class DatabaseClient {
       queryParams.set("authorization", options.authorization);
     }
 
-    const response = await TursoClient.request<DatabaseCreateTokenResponse>(
+    const response = await TursoClient.request<DatabaseToken>(
       `organizations/${this.config.org}/databases/${dbName}/auth/tokens?${queryParams}`,
       this.config,
       {
@@ -294,9 +294,7 @@ export class DatabaseClient {
     };
   }
 
-  private formatCreateResponse(
-    db: ApiCreateDatabaseResponse
-  ): DatabaseCreateResponse {
+  private formatCreateResponse(db: ApiCreateDatabaseResponse): CreatedDatabase {
     return {
       id: db.DbId,
       hostname: db.Hostname,
