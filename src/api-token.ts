@@ -6,6 +6,19 @@ export interface ApiToken {
   name: string;
 }
 
+export interface ApiTokenWithJWT extends ApiToken {
+  token: string;
+}
+
+export interface RevokedApiToken {
+  token: string;
+}
+
+export interface ApiTokenValidation {
+  valid: boolean;
+  expiry: number;
+}
+
 export class ApiTokenClient {
   constructor(private config: TursoConfig) {}
 
@@ -18,8 +31,8 @@ export class ApiTokenClient {
     return response.tokens ?? [];
   }
 
-  async create(name: string) {
-    const response = await TursoClient.request<ApiToken & { token: string }>(
+  async create(name: string): Promise<ApiTokenWithJWT> {
+    const response = await TursoClient.request<ApiTokenWithJWT>(
       `auth/api-tokens/${name}`,
       this.config,
       {
@@ -33,8 +46,8 @@ export class ApiTokenClient {
     return response;
   }
 
-  async revoke(name: string) {
-    const response = await TursoClient.request<{ token: string }>(
+  async revoke(name: string): Promise<RevokedApiToken> {
+    const response = await TursoClient.request<RevokedApiToken>(
       `auth/api-tokens/${name}`,
       this.config,
       {
@@ -45,7 +58,7 @@ export class ApiTokenClient {
     return response;
   }
 
-  async validate(token: string): Promise<{ valid: boolean; expiry: number }> {
+  async validate(token: string): Promise<ApiTokenValidation> {
     const response = await TursoClient.request<{ exp: number }>(
       "auth/api-tokens/validate",
       this.config,

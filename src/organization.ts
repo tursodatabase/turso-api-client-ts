@@ -37,6 +37,17 @@ export interface Invoice {
   invoice_pdf: string;
 }
 
+export type OrganizationMemberRole = "admin" | "member";
+
+export interface OrganizationAddedMember {
+  member: string;
+  role: OrganizationMemberRole;
+}
+
+export interface OrganizationRemovedMember {
+  member: string;
+}
+
 export class OrganizationClient {
   constructor(private config: TursoConfig) {}
 
@@ -80,7 +91,7 @@ export class OrganizationClient {
   async addMember(
     username: string,
     role?: "admin" | "member"
-  ): Promise<{ member: string; role: "admin" | "member" }> {
+  ): Promise<OrganizationAddedMember> {
     return TursoClient.request(
       `organizations/${this.config.org}/members/${username}`,
       this.config,
@@ -94,7 +105,7 @@ export class OrganizationClient {
     );
   }
 
-  async removeMember(username: string): Promise<{ member: string }> {
+  async removeMember(username: string): Promise<OrganizationRemovedMember> {
     return TursoClient.request(
       `organizations/${this.config.org}/members/${username}`,
       this.config,
@@ -106,7 +117,7 @@ export class OrganizationClient {
 
   async inviteUser(
     email: string,
-    role?: "admin" | "member"
+    role?: OrganizationMemberRole
   ): Promise<OrganizationInvite> {
     const response = await TursoClient.request<{ invited: OrganizationInvite }>(
       `organizations/${this.config.org}/invites`,
