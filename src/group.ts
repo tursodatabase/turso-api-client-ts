@@ -1,6 +1,7 @@
 import { TursoConfig } from "./config";
 import { LocationKeys } from "./location";
 import { TursoClient } from "./client";
+import type { Database } from "./database";
 
 export interface Group {
   locations: Array<keyof LocationKeys>;
@@ -116,6 +117,9 @@ export class GroupClient {
     options?: {
       expiration: string;
       authorization: "read-only" | "full-access";
+      permissions?: {
+        read_attach: { databases: Database["name"][] };
+      };
     }
   ): Promise<GroupToken> {
     const queryParams = new URLSearchParams();
@@ -133,6 +137,13 @@ export class GroupClient {
       this.config,
       {
         method: "POST",
+        body: JSON.stringify({
+          permissions: {
+            read_attach: {
+              databases: options?.permissions?.read_attach?.databases ?? [],
+            },
+          },
+        }),
       }
     );
 
