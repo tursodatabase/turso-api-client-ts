@@ -48,6 +48,13 @@ const token = await turso.groups.createToken("default", {
   expiration: "1w2d6h3m",
   authorization: "full-access",
 });
+const token = await turso.groups.createToken("default", {
+  permissions: {
+    read_attach: {
+      databases: ["db1", "db2"]
+    }
+  }
+});
 const token = await turso.groups.rotateTokens("default");
 ```
 
@@ -101,6 +108,13 @@ const token = await turso.databases.createToken("my-db");
 const token = await turso.databases.createToken("my-db", {
   expiration: "1w2d6h3n",
   authorization: "full-access",
+});
+const token = await turso.databases.createToken("my-db", {
+  permissions: {
+    read_attach: {
+      databases: ["db1", "db2"]
+    }
+  }
 });
 const token = await turso.databases.rotateTokens("my-db");
 

@@ -212,6 +212,9 @@ export class DatabaseClient {
     options?: {
       expiration: string;
       authorization: "read-only" | "full-access";
+      permissions?: {
+        read_attach: { databases: Database["name"][] };
+      };
     }
   ): Promise<DatabaseToken> {
     const queryParams = new URLSearchParams();
@@ -229,6 +232,13 @@ export class DatabaseClient {
       this.config,
       {
         method: "POST",
+        body: JSON.stringify({
+          permissions: {
+            read_attach: {
+              databases: options?.permissions?.read_attach?.databases ?? [],
+            },
+          },
+        }),
       }
     );
 
