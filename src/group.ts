@@ -115,8 +115,8 @@ export class GroupClient {
   async createToken(
     groupName: string,
     options?: {
-      expiration: string;
-      authorization: "read-only" | "full-access";
+      expiration?: string;
+      authorization?: "read-only" | "full-access";
       permissions?: {
         read_attach: { databases: Database["name"][] };
       };
