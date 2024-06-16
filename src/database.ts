@@ -210,8 +210,8 @@ export class DatabaseClient {
   async createToken(
     dbName: string,
     options?: {
-      expiration: string;
-      authorization: "read-only" | "full-access";
+      expiration?: string;
+      authorization?: "read-only" | "full-access";
       permissions?: {
         read_attach: { databases: Database["name"][] };
       };
