@@ -7,8 +7,14 @@
 ```ts
 import { createClient } from "@tursodatabase/api";
 
+// Personal account client
 const turso = createClient({
-  org: "", // Your personal account or organization slug
+  token: "...",
+});
+
+// Organization account client
+const turso = createClient({
+  org: "...", // Your organization slug
   token: "...",
 });
 ```
@@ -51,9 +57,9 @@ const token = await turso.groups.createToken("default", {
 const token = await turso.groups.createToken("default", {
   permissions: {
     read_attach: {
-      databases: ["db1", "db2"]
-    }
-  }
+      databases: ["db1", "db2"],
+    },
+  },
 });
 const token = await turso.groups.rotateTokens("default");
 ```
@@ -112,9 +118,9 @@ const token = await turso.databases.createToken("my-db", {
 const token = await turso.databases.createToken("my-db", {
   permissions: {
     read_attach: {
-      databases: ["db1", "db2"]
-    }
-  }
+      databases: ["db1", "db2"],
+    },
+  },
 });
 const token = await turso.databases.rotateTokens("my-db");
 
