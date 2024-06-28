@@ -1,5 +1,4 @@
-import { TursoConfig } from "./config";
-import { TursoClient } from "./client";
+import { TursoClient, type TursoConfig } from "./client";
 
 export interface ApiToken {
   id: string;
@@ -24,7 +23,7 @@ export class ApiTokenClient {
 
   async list(): Promise<ApiToken[]> {
     const response = await TursoClient.request<{ tokens: ApiToken[] }>(
-      "auth/api-tokens",
+      `auth/api-tokens`,
       this.config
     );
 
@@ -60,7 +59,7 @@ export class ApiTokenClient {
 
   async validate(token: string): Promise<ApiTokenValidation> {
     const response = await TursoClient.request<{ exp: number }>(
-      "auth/api-tokens/validate",
+      `auth/api-tokens/validate`,
       this.config,
       {
         headers: {

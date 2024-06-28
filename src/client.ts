@@ -1,9 +1,10 @@
-import { TursoConfig } from "./config";
 import { ApiTokenClient } from "./api-token";
 import { OrganizationClient } from "./organization";
 import { LocationClient } from "./location";
 import { GroupClient } from "./group";
 import { DatabaseClient } from "./database";
+
+export const TURSO_API_URL = "https://api.turso.tech/v1/";
 
 interface ApiErrorResponse {
   error: string;
@@ -22,6 +23,26 @@ export class TursoClientError extends Error {
   }
 }
 
+/**
+ * Configuration interface for Turso API client.
+ */
+export interface TursoConfig {
+  /**
+   * Organization identifier.
+   */
+  org?: string;
+
+  /**
+   * API token for authentication.
+   */
+  token: string;
+
+  /**
+   * Base URL for the API. Optional and defaults to "https://api.turso.tech/v1/".
+   */
+  baseUrl?: string;
+}
+
 export class TursoClient {
   private config: TursoConfig;
   public apiTokens: ApiTokenClient;
@@ -36,7 +57,7 @@ export class TursoClient {
     }
 
     this.config = {
-      baseUrl: "https://api.turso.tech/v1/",
+      baseUrl: TURSO_API_URL,
       ...config,
     };
 
@@ -47,6 +68,14 @@ export class TursoClient {
     this.databases = new DatabaseClient(this.config);
   }
 
+  /**
+   * Makes an API request.
+   * @param url - The endpoint URL.
+   * @param config - The Turso configuration.
+   * @param options - The request options.
+   * @returns The API response.
+   * @throws TursoClientError if the request fails.
+   */
   static async request<T>(
     url: string,
     config: TursoConfig,
@@ -58,6 +87,7 @@ export class TursoClient {
         ...options.headers,
         Authorization: `Bearer ${config.token}`,
         "User-Agent": "@tursodatabase/api",
+        ...(config.org && { "x-turso-organization": config.org }),
       },
     });
 
@@ -75,6 +105,11 @@ export class TursoClient {
   }
 }
 
+/**
+ * Creates a new TursoClient instance.
+ * @param config - The Turso configuration.
+ * @returns The TursoClient instance.
+ */
 export function createClient(config: TursoConfig): TursoClient {
   return new TursoClient(config);
 }

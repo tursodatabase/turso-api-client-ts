@@ -1,5 +1,4 @@
-import { TursoConfig } from "./config";
-import { TursoClient } from "./client";
+import { TursoClient, type TursoConfig } from "./client";
 
 export type LocationKeys = {
   ams: string;
@@ -51,7 +50,7 @@ export class LocationClient {
   async list(): Promise<Location[]> {
     const response = await TursoClient.request<{
       locations: LocationKeys;
-    }>("locations", this.config);
+    }>(`locations`, this.config);
 
     if (!response.locations) {
       return [];
