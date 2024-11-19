@@ -11,7 +11,7 @@ export interface Group {
 
 export type ExtensionType =
   | "vector"
-  | "vss"
+  | "vec"
   | "crypto"
   | "fuzzy"
   | "math"

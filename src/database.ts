@@ -12,6 +12,7 @@ export interface Database {
   version: string;
   group?: string;
   sleeping: boolean;
+  archived: boolean;
   allow_attach: boolean;
   block_reads: boolean;
   block_writes: boolean;
@@ -98,10 +99,26 @@ function hasSchemaOption(
 export class DatabaseClient {
   constructor(private config: TursoConfig) {}
 
-  async list(): Promise<Database[]> {
+  async list(options?: {
+    schema?: string;
+    group?: string;
+    type?: "schema";
+  }): Promise<Database[]> {
+    const queryParams = new URLSearchParams(
+      Object.entries({
+        schema: options?.schema,
+        group: options?.group,
+        type: options?.type,
+      }).filter(([_, value]) => value !== undefined) as [string, string][]
+    );
+
+    const url = `organizations/${this.config.org}/databases${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+
     const response = await TursoClient.request<{
       databases: ApiDatabaseResponse[];
-    }>(`organizations/${this.config.org}/databases`, this.config);
+    }>(url, this.config);
 
     return (response.databases ?? []).map((db) => this.formatResponse(db));
   }
@@ -296,6 +313,7 @@ export class DatabaseClient {
       version: db.version,
       group: db.group,
       sleeping: db.sleeping,
+      archived: db.archived,
       allow_attach: db.allow_attach,
       block_reads: db.block_reads,
       block_writes: db.block_writes,
