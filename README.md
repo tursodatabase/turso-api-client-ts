@@ -51,9 +51,9 @@ const token = await turso.groups.createToken("default", {
 const token = await turso.groups.createToken("default", {
   permissions: {
     read_attach: {
-      databases: ["db1", "db2"]
-    }
-  }
+      databases: ["db1", "db2"],
+    },
+  },
 });
 const token = await turso.groups.rotateTokens("default");
 ```
@@ -67,6 +67,15 @@ const token = await turso.apiTokens.validate("token");
 
 ```ts
 const database = await turso.databases.list();
+const database = await turso.databases.list({
+  schema: "parent-schema-db-name", // Filter by schema database
+});
+const database = await turso.databases.list({
+  group: "group-name", // Filter by group
+});
+const database = await turso.databases.list({
+  type: "schema", // Filter by schema dbs only
+});
 
 const database = await turso.databases.get("my-db");
 
@@ -112,9 +121,9 @@ const token = await turso.databases.createToken("my-db", {
 const token = await turso.databases.createToken("my-db", {
   permissions: {
     read_attach: {
-      databases: ["db1", "db2"]
-    }
-  }
+      databases: ["db1", "db2"],
+    },
+  },
 });
 const token = await turso.databases.rotateTokens("my-db");
 
