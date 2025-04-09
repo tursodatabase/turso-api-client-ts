@@ -82,6 +82,9 @@ export class GroupClient {
     return response.group;
   }
 
+  /**
+   * @deprecated Turso Cloud deprecated edge replicas
+   */
   async addLocation(
     groupName: string,
     location: keyof LocationKeys
@@ -97,6 +100,9 @@ export class GroupClient {
     return response.group;
   }
 
+  /**
+   * @deprecated Turso Cloud deprecated edge replicas
+   */
   async removeLocation(
     groupName: string,
     location: keyof LocationKeys
@@ -112,6 +118,14 @@ export class GroupClient {
     return response.group;
   }
 
+  /**
+   * Creates a token for a group
+   * @param groupName The name of the group
+   * @param options Token creation options
+   * @param options.expiration Token expiration
+   * @param options.authorization Token authorization level
+   * @param options.permissions - @deprecated This parameter is deprecated and will be removed in a future version
+   */
   async createToken(
     groupName: string,
     options?: {

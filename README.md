@@ -1,6 +1,12 @@
 # @tursodatabase/api
 
-⚠️ This SDK is still in development and is not ready for production use.
+Programmatically manage Turso Cloud databases.
+
+## Install
+
+```
+npm install @tursodatabase/api
+```
 
 ## Usage
 
@@ -37,12 +43,7 @@ const closest = await turso.locations.closest();
 const groups = await turso.groups.list();
 const group = await turso.groups.get("default");
 const group = await turso.groups.create("customgroup", "lhr");
-const group = await turso.groups.create("customgroup", "ams", {
-  extensions: "all", // or ["uuid", "vector"]
-});
 const group = await turso.groups.delete("customgroup");
-const group = await turso.groups.addLocation("default", "lhr");
-const group = await turso.groups.removeLocation("default", "lhr");
 const token = await turso.groups.createToken("default");
 const token = await turso.groups.createToken("default", {
   expiration: "1w2d6h3m",
@@ -68,20 +69,13 @@ const token = await turso.apiTokens.validate("token");
 ```ts
 const database = await turso.databases.list();
 const database = await turso.databases.list({
-  schema: "parent-schema-db-name", // Filter by schema database
-});
-const database = await turso.databases.list({
   group: "group-name", // Filter by group
-});
-const database = await turso.databases.list({
-  type: "schema", // Filter by schema dbs only
 });
 
 const database = await turso.databases.get("my-db");
 
 const database = await turso.databases.create("db-name");
 const database = await turso.databases.create("db-name", {
-  image: "canary",
   group: "my-group",
 });
 const database = await turso.databases.create("db-name", {
@@ -106,24 +100,12 @@ const database = await turso.databases.create("child-db", {
   schema: "parent-db",
 });
 
-const database = await turso.databases.updateVersion("my-db");
-
 const database = await turso.databases.delete("my-db");
-
-const instances = await turso.databases.listInstances("my-db");
-const instances = await turso.databases.getInstance("my-db", "lhr");
 
 const token = await turso.databases.createToken("my-db");
 const token = await turso.databases.createToken("my-db", {
   expiration: "1w2d6h3n",
   authorization: "full-access",
-});
-const token = await turso.databases.createToken("my-db", {
-  permissions: {
-    read_attach: {
-      databases: ["db1", "db2"],
-    },
-  },
 });
 const token = await turso.databases.rotateTokens("my-db");
 
@@ -138,7 +120,3 @@ const usageStatsWithString = await turso.databases.usage("my-db", {
   to: "2023-02-01T00:00:00Z",
 });
 ```
-
-## Todo
-
-- Maybe change to named args for all methods
