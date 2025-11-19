@@ -1,6 +1,20 @@
-# @tursodatabase/api
+<p align="center">
+  <h1 align="center">@tursodatabase/api</h1>
+</p>
 
-Programmatically manage Turso Cloud databases.
+<p align="center">
+  Programmatically manage Turso Cloud databases.
+</p>
+
+<p align="center">
+  <a title="JavaScript" target="_blank" href="https://www.npmjs.com/package/@tursodatabase/api"><img alt="NPM" src="https://img.shields.io/npm/v/@tursodatabase/api"></a>
+  <a title="MIT" target="_blank" href="https://github.com/tursodatabase/turso-api-client-ts/blob/main/LICENSE.md"><img src="http://img.shields.io/badge/license-MIT-orange.svg?style=flat-square"></a>
+</p>
+<p align="center">
+  <a title="Users's Discord" target="_blank" href="https://tur.so/discord"><img alt="Chat with other users of Turso (and Turso Cloud) on Discord" src="https://img.shields.io/discord/933071162680958986?label=Discord&logo=Discord&style=social&label=Users"></a>
+</p>
+
+---
 
 ## Install
 
