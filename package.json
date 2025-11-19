@@ -17,12 +17,10 @@
     "build": "tsup",
     "dev": "tsup --watch --clean=false",
     "test": "vitest",
-    "test:watch": "vitest watch",
-    "semantic-release": "semantic-release"
+    "test:watch": "vitest watch"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
-    "semantic-release": "23.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.2",
     "vitest": "^1.0.4"
