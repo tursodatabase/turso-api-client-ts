@@ -120,3 +120,7 @@ const usageStatsWithString = await turso.databases.usage("my-db", {
   to: "2023-02-01T00:00:00Z",
 });
 ```
+
+## License
+
+MIT
