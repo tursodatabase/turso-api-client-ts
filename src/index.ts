@@ -1,6 +1,6 @@
 import "whatwg-fetch";
 
-export { createClient } from "./client";
+export { createClient, TursoClientError } from "./client";
 
 export type {
   ApiToken,
@@ -8,7 +8,6 @@ export type {
   RevokedApiToken,
   ApiTokenValidation,
 } from "./api-token";
-export type { TursoClientError } from "./client";
 export type { TursoConfig } from "./config";
 export type {
   Database,
