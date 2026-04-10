@@ -14,11 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "24.x"
           check-latest: true
-          registry-url: 'https://registry.npmjs.org'
       - name: Show toolchain versions
         run: |
           node --version
@@ -26,8 +25,20 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm audit signatures
+      - name: Determine npm dist-tag
+        id: publish_meta
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            TAG="${VERSION#*-}"
+            TAG="${TAG%%.*}"
+          else
+            TAG="latest"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --access public --tag "${{ steps.publish_meta.outputs.tag }}"
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
