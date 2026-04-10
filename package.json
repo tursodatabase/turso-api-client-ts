@@ -1,7 +1,7 @@
 {
   "name": "@tursodatabase/api",
   "description": "The Turso API gives you everything needed to manage your organization and it's members, groups, databases, and API tokens.",
-  "version": "2.0.0-pre.2",
+  "version": "2.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
