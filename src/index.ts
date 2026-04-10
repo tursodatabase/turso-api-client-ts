@@ -26,6 +26,7 @@ export type {
   Organization,
   OrganizationMember,
   OrganizationInvite,
+  OrganizationInviteCreated,
   Invoice,
   OrganizationMemberRole,
   OrganizationAddedMember,

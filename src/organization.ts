@@ -17,15 +17,18 @@ export interface OrganizationMember {
 }
 
 export interface OrganizationInvite {
-  ID: number;
-  CreatedAt: string;
-  UpdatedAt: string;
-  DeletedAt: string;
-  Role: "admin" | "member";
-  Email: string;
-  OrganizationID: number;
-  Organization: Organization;
-  Accepted: boolean;
+  id: number;
+  email: string;
+  role: "admin" | "member" | "viewer";
+  token: string;
+  created_at: string;
+}
+
+export interface OrganizationInviteCreated {
+  email: string;
+  role: "admin" | "member" | "viewer";
+  organization: string;
+  token: string;
 }
 
 export interface Invoice {
@@ -115,12 +118,25 @@ export class OrganizationClient {
     );
   }
 
+  async listInvites(): Promise<OrganizationInvite[]> {
+    const response = await TursoClient.request<{
+      invites: OrganizationInvite[];
+    }>(
+      `../v2/organizations/${this.config.org}/invites`,
+      this.config
+    );
+
+    return response.invites ?? [];
+  }
+
   async inviteUser(
     email: string,
     role?: OrganizationMemberRole
-  ): Promise<OrganizationInvite> {
-    const response = await TursoClient.request<{ invited: OrganizationInvite }>(
-      `organizations/${this.config.org}/invites`,
+  ): Promise<OrganizationInviteCreated> {
+    const response = await TursoClient.request<{
+      invited: OrganizationInviteCreated;
+    }>(
+      `../v2/organizations/${this.config.org}/invites`,
       this.config,
       {
         method: "POST",
@@ -131,9 +147,9 @@ export class OrganizationClient {
     return response.invited;
   }
 
-  async deleteInvite(email: string): Promise<OrganizationInvite> {
-    return TursoClient.request(
-      `organizations/${this.config.org}/invites/${email}`,
+  async deleteInvite(email: string): Promise<void> {
+    await TursoClient.request(
+      `../v2/organizations/${this.config.org}/invites/${email}`,
       this.config,
       {
         method: "DELETE",
