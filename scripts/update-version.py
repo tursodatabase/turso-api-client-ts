@@ -3,12 +3,23 @@
 import json
 import sys
 import subprocess
+import re
 from pathlib import Path
+
+SEMVER_RE = re.compile(
+    r"^(0|[1-9]\d*)\."
+    r"(0|[1-9]\d*)\."
+    r"(0|[1-9]\d*)"
+    r"(?:-((?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
+    r"(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?"
+    r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
+)
 
 def main():
     if len(sys.argv) != 2:
         print("Usage: python scripts/update-version.py <version>")
         print("Example: python scripts/update-version.py 1.0.0")
+        print("Example: python scripts/update-version.py 1.0.0-pre.1")
         sys.exit(1)
 
     version = sys.argv[1]
@@ -17,10 +28,12 @@ def main():
     if version.startswith('v'):
         version = version[1:]
 
-    # Validate version format (basic check)
-    parts = version.split('.')
-    if len(parts) != 3 or not all(part.isdigit() for part in parts):
-        print(f"Error: Invalid version format '{version}'. Expected format: X.Y.Z")
+    # Validate version format (semver)
+    if not SEMVER_RE.fullmatch(version):
+        print(
+            f"Error: Invalid version format '{version}'. "
+            "Expected a valid semver (e.g. X.Y.Z or X.Y.Z-pre.1)"
+        )
         sys.exit(1)
 
     # Read package.json
