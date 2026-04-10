@@ -6,24 +6,28 @@ on:
       - 'v*'
 
 permissions:
+  id-token: write
   contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: "24.x"
+          check-latest: true
           registry-url: 'https://registry.npmjs.org'
+      - name: Show toolchain versions
+        run: |
+          node --version
+          npm --version
       - run: npm ci
       - run: npm run build
       - run: npm audit signatures
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish
+        run: npm publish --access public
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
