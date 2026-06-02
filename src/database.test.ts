@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { DatabaseClient } from "./database";
+import { TursoClient } from "./client";
 
 vi.mock("./client", () => ({
   TursoClient: { request: vi.fn() },
@@ -36,6 +37,36 @@ describe("DatabaseClient", () => {
     // @ts-expect-error
     await expect(client.create("testDB", options)).rejects.toThrow(
       "Seed URL is required when type is 'dump'"
+    );
+  });
+
+  it("forwards remote_encryption options when creating an encrypted database", async () => {
+    vi.mocked(TursoClient.request).mockResolvedValue({
+      database: { DbId: "id", Hostname: "host", Name: "testDB" },
+    });
+
+    await client.create("testDB", {
+      group: "default",
+      remote_encryption: {
+        encryption_key: "c29tZS1iYXNlNjQta2V5",
+        encryption_cipher: "aes256gcm",
+      },
+    });
+
+    expect(TursoClient.request).toHaveBeenCalledWith(
+      "organizations/turso/databases",
+      expect.anything(),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          name: "testDB",
+          group: "default",
+          remote_encryption: {
+            encryption_key: "c29tZS1iYXNlNjQta2V5",
+            encryption_cipher: "aes256gcm",
+          },
+        }),
+      })
     );
   });
 });
