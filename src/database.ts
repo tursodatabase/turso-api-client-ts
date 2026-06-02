@@ -79,6 +79,27 @@ export interface DatabaseToken {
   jwt: string;
 }
 
+export type EncryptionCipher =
+  | "aes256gcm"
+  | "aes128gcm"
+  | "chacha20poly1305"
+  | "aegis128l"
+  | "aegis128x2"
+  | "aegis128x4"
+  | "aegis256"
+  | "aegis256x2"
+  | "aegis256x4";
+
+export interface RemoteEncryption {
+  /**
+   * Base64-encoded encryption key. Key size depends on the cipher: 32 bytes
+   * for aes256gcm, chacha20poly1305 and aegis256 variants; 16 bytes for
+   * aes128gcm and aegis128l variants.
+   */
+  encryption_key: string;
+  encryption_cipher: EncryptionCipher;
+}
+
 type MultiDBSchemaOptions =
   | { is_schema: boolean; schema?: never }
   | { is_schema?: never; schema: string }
@@ -142,6 +163,8 @@ export class DatabaseClient {
         url?: string;
         timestamp?: string | Date;
       };
+      size_limit?: string;
+      remote_encryption?: RemoteEncryption;
     } & MultiDBSchemaOptions
   ): Promise<CreatedDatabase> {
     if (hasIsSchemaOption(options) && hasSchemaOption(options)) {

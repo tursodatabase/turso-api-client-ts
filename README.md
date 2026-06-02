@@ -113,6 +113,13 @@ const database = await turso.databases.create("parent-db", {
 const database = await turso.databases.create("child-db", {
   schema: "parent-db",
 });
+const database = await turso.databases.create("encrypted-db", {
+  group: "my-group",
+  remote_encryption: {
+    encryption_key: "<base64-encoded-key>",
+    encryption_cipher: "aes256gcm",
+  },
+});
 
 const database = await turso.databases.delete("my-db");
 
