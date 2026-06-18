@@ -1,4 +1,4 @@
-import { TursoConfig } from "./config";
+import { TursoConfig, resolveOrganization } from "./config";
 import { LocationKeys } from "./location";
 import { TursoClient } from "./client";
 import type { Database } from "./database";
@@ -28,9 +28,13 @@ export interface GroupToken {
 export class GroupClient {
   constructor(private config: TursoConfig) {}
 
+  private get org(): string {
+    return resolveOrganization(this.config);
+  }
+
   async list(): Promise<Group[]> {
     const response = await TursoClient.request<{ groups: Group[] }>(
-      `organizations/${this.config.org}/groups`,
+      `organizations/${this.org}/groups`,
       this.config
     );
 
@@ -39,7 +43,7 @@ export class GroupClient {
 
   async get(name: string): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      `organizations/${this.config.org}/groups/${name}`,
+      `organizations/${this.org}/groups/${name}`,
       this.config
     );
 
@@ -52,7 +56,7 @@ export class GroupClient {
     options?: { extensions?: Array<ExtensionType> | "all" }
   ): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      `organizations/${this.config.org}/groups`,
+      `organizations/${this.org}/groups`,
       this.config,
       {
         method: "POST",
@@ -72,7 +76,7 @@ export class GroupClient {
 
   async delete(name: string): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      `organizations/${this.config.org}/groups/${name}`,
+      `organizations/${this.org}/groups/${name}`,
       this.config,
       {
         method: "DELETE",
@@ -90,7 +94,7 @@ export class GroupClient {
     location: keyof LocationKeys
   ): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      `organizations/${this.config.org}/groups/${groupName}/locations/${location}`,
+      `organizations/${this.org}/groups/${groupName}/locations/${location}`,
       this.config,
       {
         method: "POST",
@@ -108,7 +112,7 @@ export class GroupClient {
     location: keyof LocationKeys
   ): Promise<Group> {
     const response = await TursoClient.request<{ group: Group }>(
-      `organizations/${this.config.org}/groups/${groupName}/locations/${location}`,
+      `organizations/${this.org}/groups/${groupName}/locations/${location}`,
       this.config,
       {
         method: "DELETE",
@@ -147,7 +151,7 @@ export class GroupClient {
     }
 
     const response = await TursoClient.request<GroupToken>(
-      `organizations/${this.config.org}/groups/${groupName}/auth/tokens?${queryParams}`,
+      `organizations/${this.org}/groups/${groupName}/auth/tokens?${queryParams}`,
       this.config,
       {
         method: "POST",
@@ -166,7 +170,7 @@ export class GroupClient {
 
   async rotateTokens(groupName: string): Promise<void> {
     return await TursoClient.request<void>(
-      `organizations/${this.config.org}/groups/${groupName}/auth/rotate`,
+      `organizations/${this.org}/groups/${groupName}/auth/rotate`,
       this.config,
       {
         method: "POST",

@@ -1,4 +1,4 @@
-import { TursoConfig } from "./config";
+import { TursoConfig, resolveOrganization } from "./config";
 import { ApiTokenClient } from "./api-token";
 import { OrganizationClient } from "./organization";
 import { LocationClient } from "./location";
@@ -39,6 +39,9 @@ export class TursoClient {
       baseUrl: "https://api.turso.tech/v1/",
       ...config,
     };
+
+    // Ensure an organization slug or id is available before any request.
+    resolveOrganization(this.config);
 
     this.apiTokens = new ApiTokenClient(this.config);
     this.organizations = new OrganizationClient(this.config);

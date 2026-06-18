@@ -33,6 +33,16 @@ const turso = createClient({
 });
 ```
 
+You can also identify your organization by id instead of slug. Provide either
+`org` or `orgId` (`orgId` takes precedence when both are set):
+
+```ts
+const turso = createClient({
+  orgId: "...", // Your organization id, instead of the slug
+  token: "...",
+});
+```
+
 ```ts
 const organizations = await turso.organizations.list();
 const orgMembers = await turso.organizations.update({ overages: true });
@@ -91,6 +101,10 @@ const database = await turso.databases.get("my-db");
 const database = await turso.databases.create("db-name");
 const database = await turso.databases.create("db-name", {
   group: "my-group",
+});
+// Identify the group by id instead of name (mutually exclusive with `group`)
+const database = await turso.databases.create("db-name", {
+  groupId: "my-group-id",
 });
 const database = await turso.databases.create("db-name", {
   group: "my-group",

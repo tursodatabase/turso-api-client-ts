@@ -40,6 +40,48 @@ describe("DatabaseClient", () => {
     );
   });
 
+  it("forwards group_id when groupId is provided", async () => {
+    vi.mocked(TursoClient.request).mockResolvedValue({
+      database: { DbId: "id", Hostname: "host", Name: "testDB" },
+    });
+
+    await client.create("testDB", { groupId: "grp_123" });
+
+    expect(TursoClient.request).toHaveBeenCalledWith(
+      "organizations/turso/databases",
+      expect.anything(),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          name: "testDB",
+          group_id: "grp_123",
+        }),
+      })
+    );
+  });
+
+  it("throws an error when both group and groupId are provided", async () => {
+    await expect(
+      client.create("testDB", { group: "default", groupId: "grp_123" })
+    ).rejects.toThrow("'group' and 'groupId' cannot both be provided");
+  });
+
+  it("uses orgId in the request path when provided instead of org", async () => {
+    const orgIdClient = new DatabaseClient({ orgId: "org_123", token: "abc" });
+
+    vi.mocked(TursoClient.request).mockResolvedValue({
+      database: { DbId: "id", Hostname: "host", Name: "testDB" },
+    });
+
+    await orgIdClient.create("testDB", { group: "default" });
+
+    expect(TursoClient.request).toHaveBeenCalledWith(
+      "organizations/org_123/databases",
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
   it("forwards remote_encryption options when creating an encrypted database", async () => {
     vi.mocked(TursoClient.request).mockResolvedValue({
       database: { DbId: "id", Hostname: "host", Name: "testDB" },
