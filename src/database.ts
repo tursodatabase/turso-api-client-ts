@@ -178,6 +178,8 @@ export class DatabaseClient {
       };
       size_limit?: string;
       remote_encryption?: RemoteEncryption;
+      /** When true, provisions the database using TursoDB. */
+      use_tursodb?: boolean;
     } & MultiDBSchemaOptions
   ): Promise<CreatedDatabase> {
     if (hasIsSchemaOption(options) && hasSchemaOption(options)) {

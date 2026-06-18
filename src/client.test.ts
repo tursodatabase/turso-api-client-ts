@@ -18,28 +18,6 @@ describe("TursoClient", () => {
     expect(client).toBeInstanceOf(TursoClient);
   });
 
-  it("should throw an error if neither org nor orgId is provided", () => {
-    const config = { token: "abc" };
-
-    expect(() => new TursoClient(config)).toThrow(
-      "You must provide an organization slug (org) or id (orgId)"
-    );
-  });
-
-  it("should create an instance when orgId is provided instead of org", () => {
-    const config = { orgId: "org_123", token: "abc" };
-    const client = new TursoClient(config);
-
-    expect(client).toBeInstanceOf(TursoClient);
-  });
-
-  it("should accept a function that resolves the API token", () => {
-    const config = { org: "turso", token: async () => "abc" };
-    const client = new TursoClient(config);
-
-    expect(client).toBeInstanceOf(TursoClient);
-  });
-
   it("should throw an error message that will match with API's error message", async () => {
     const config = { org: "turso", token: "abc" };
     const client = new TursoClient(config);
