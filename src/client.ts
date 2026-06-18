@@ -1,4 +1,4 @@
-import { TursoConfig, resolveOrganization } from "./config";
+import { TursoConfig, resolveOrganization, resolveToken } from "./config";
 import { ApiTokenClient } from "./api-token";
 import { OrganizationClient } from "./organization";
 import { LocationClient } from "./location";
@@ -55,11 +55,13 @@ export class TursoClient {
     config: TursoConfig,
     options: RequestInit = {}
   ) {
+    const token = await resolveToken(config);
+
     const response = await fetch(new URL(url, config.baseUrl), {
       ...options,
       headers: {
         ...options.headers,
-        Authorization: `Bearer ${config.token}`,
+        Authorization: `Bearer ${token}`,
         "User-Agent": "@tursodatabase/api",
       },
     });

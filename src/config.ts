@@ -1,3 +1,9 @@
+/**
+ * API token used to authenticate requests. Either a static string or a factory
+ * that resolves one on demand (e.g. to refresh short-lived tokens).
+ */
+export type TursoToken = string | (() => Promise<string>);
+
 export interface TursoConfig {
   /**
    * Organization slug. Provide either `org` or `orgId`.
@@ -8,7 +14,7 @@ export interface TursoConfig {
    * Takes precedence over `org` when both are set.
    */
   orgId?: string;
-  token: string;
+  token: TursoToken;
   baseUrl?: string;
 }
 
@@ -24,4 +30,13 @@ export function resolveOrganization(config: TursoConfig): string {
     );
   }
   return organization;
+}
+
+/**
+ * Resolves the API token, invoking the factory when a function is provided.
+ */
+export async function resolveToken(config: TursoConfig): Promise<string> {
+  return typeof config.token === "function"
+    ? await config.token()
+    : config.token;
 }

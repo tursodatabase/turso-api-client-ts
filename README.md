@@ -43,6 +43,17 @@ const turso = createClient({
 });
 ```
 
+`token` accepts either a static string or a function that resolves one on
+demand. The function is awaited on every request, which is handy for
+short-lived tokens that need to be refreshed:
+
+```ts
+const turso = createClient({
+  org: "",
+  token: async () => await getFreshToken(),
+});
+```
+
 ```ts
 const organizations = await turso.organizations.list();
 const orgMembers = await turso.organizations.update({ overages: true });
