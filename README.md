@@ -33,6 +33,28 @@ const turso = createClient({
 });
 ```
 
+You can also identify your organization by id instead of slug. Provide either
+`org` or `orgId` (`orgId` takes precedence when both are set). `orgId` requires
+v3 of the Turso API:
+
+```ts
+const turso = createClient({
+  orgId: "...", // Your organization id, instead of the slug
+  token: "...",
+});
+```
+
+`token` accepts either a static string or a function that resolves one on
+demand. The function is awaited on every request, which is handy for
+short-lived tokens that need to be refreshed:
+
+```ts
+const turso = createClient({
+  org: "",
+  token: async () => await getFreshToken(),
+});
+```
+
 ```ts
 const organizations = await turso.organizations.list();
 const orgMembers = await turso.organizations.update({ overages: true });
@@ -80,6 +102,11 @@ const token = await turso.apiTokens.revoke("superdupertokenname");
 const token = await turso.apiTokens.validate("token");
 ```
 
+Methods that operate on a single database (`get`, `delete`, `createToken`,
+`rotateTokens`, `usage`, `listInstances`, `getInstance`, `updateVersion`) take a
+database identifier. On v1/v2 of the Turso API this is the database name; on v3
+it is the database id.
+
 ```ts
 const database = await turso.databases.list();
 const database = await turso.databases.list({
@@ -91,6 +118,11 @@ const database = await turso.databases.get("my-db");
 const database = await turso.databases.create("db-name");
 const database = await turso.databases.create("db-name", {
   group: "my-group",
+});
+// Identify the group by id instead of name (mutually exclusive with `group`).
+// Requires v3 of the Turso API.
+const database = await turso.databases.create("db-name", {
+  groupId: "my-group-id",
 });
 const database = await turso.databases.create("db-name", {
   group: "my-group",

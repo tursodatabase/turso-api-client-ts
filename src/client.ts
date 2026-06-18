@@ -1,4 +1,4 @@
-import { TursoConfig } from "./config";
+import { TursoConfig, resolveOrganization, resolveToken } from "./config";
 import { ApiTokenClient } from "./api-token";
 import { OrganizationClient } from "./organization";
 import { LocationClient } from "./location";
@@ -40,6 +40,9 @@ export class TursoClient {
       ...config,
     };
 
+    // Ensure an organization slug or id is available before any request.
+    resolveOrganization(this.config);
+
     this.apiTokens = new ApiTokenClient(this.config);
     this.organizations = new OrganizationClient(this.config);
     this.locations = new LocationClient(this.config);
@@ -52,11 +55,13 @@ export class TursoClient {
     config: TursoConfig,
     options: RequestInit = {}
   ) {
+    const token = await resolveToken(config);
+
     const response = await fetch(new URL(url, config.baseUrl), {
       ...options,
       headers: {
         ...options.headers,
-        Authorization: `Bearer ${config.token}`,
+        Authorization: `Bearer ${token}`,
         "User-Agent": "@tursodatabase/api",
       },
     });

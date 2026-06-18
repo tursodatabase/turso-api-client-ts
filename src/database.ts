@@ -1,5 +1,5 @@
 import { LocationKeys } from "./location";
-import { TursoConfig } from "./config";
+import { TursoConfig, resolveOrganization } from "./config";
 import { TursoClient } from "./client";
 
 export interface Database {
@@ -22,7 +22,7 @@ export interface Database {
 
 export interface ApiDatabaseResponse
   extends Database,
-    ApiCreateDatabaseResponse {}
+  ApiCreateDatabaseResponse { }
 
 export interface ApiCreateDatabaseResponse {
   DbId: string;
@@ -117,8 +117,17 @@ function hasSchemaOption(
   return options !== undefined && options.schema !== undefined;
 }
 
+/**
+ * Methods that operate on a single database take a `dbName` positional
+ * argument that identifies the database in the request path. On v1/v2 of the
+ * Turso API this is the database name; on v3 it is the database id.
+ */
 export class DatabaseClient {
-  constructor(private config: TursoConfig) {}
+  constructor(private config: TursoConfig) { }
+
+  private get org(): string {
+    return resolveOrganization(this.config);
+  }
 
   async list(options?: {
     schema?: string;
@@ -133,9 +142,7 @@ export class DatabaseClient {
       }).filter(([_, value]) => value !== undefined) as [string, string][]
     );
 
-    const url = `organizations/${this.config.org}/databases${
-      queryParams.toString() ? `?${queryParams.toString()}` : ""
-    }`;
+    const url = `organizations/${this.org}/databases${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
 
     const response = await TursoClient.request<{
       databases: ApiDatabaseResponse[];
@@ -147,7 +154,7 @@ export class DatabaseClient {
   async get(dbName: string): Promise<Database> {
     const response = await TursoClient.request<{
       database: ApiDatabaseResponse;
-    }>(`organizations/${this.config.org}/databases/${dbName}`, this.config);
+    }>(`organizations/${this.org}/databases/${dbName}`, this.config);
 
     return this.formatResponse(response.database);
   }
@@ -156,7 +163,13 @@ export class DatabaseClient {
     dbName: string,
     options?: {
       image?: "latest" | "canary";
+      /** Name of the group where the database should be created. */
       group?: string;
+      /**
+       * Id of the group where the database should be created. Mutually
+       * exclusive with `group`. Requires v3 of the Turso API.
+       */
+      groupId?: string;
       seed?: {
         type: "database" | "dump";
         name?: string;
@@ -165,10 +178,16 @@ export class DatabaseClient {
       };
       size_limit?: string;
       remote_encryption?: RemoteEncryption;
+      /** When true, provisions the database using TursoDB. */
+      use_tursodb?: boolean;
     } & MultiDBSchemaOptions
   ): Promise<CreatedDatabase> {
     if (hasIsSchemaOption(options) && hasSchemaOption(options)) {
       throw new Error("'is_schema' and 'schema' cannot both be provided");
+    }
+
+    if (options?.group !== undefined && options?.groupId !== undefined) {
+      throw new Error("'group' and 'groupId' cannot both be provided");
     }
 
     if (options?.seed) {
@@ -184,16 +203,19 @@ export class DatabaseClient {
       options.seed.timestamp = this.formatDateParameter(options.seed.timestamp);
     }
 
+    const { groupId, ...rest } = options ?? {};
+
     const response = await TursoClient.request<{
       database: ApiCreateDatabaseResponse;
-    }>(`organizations/${this.config.org}/databases`, this.config, {
+    }>(`organizations/${this.org}/databases`, this.config, {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
       body: JSON.stringify({
         name: dbName,
-        ...options,
+        ...rest,
+        ...(groupId !== undefined ? { group_id: groupId } : {}),
       }),
     });
 
@@ -202,7 +224,7 @@ export class DatabaseClient {
 
   async updateVersion(dbName: string): Promise<void> {
     return await TursoClient.request(
-      `organizations/${this.config.org}/databases/${dbName}/update`,
+      `organizations/${this.org}/databases/${dbName}/update`,
       this.config,
       {
         method: "POST",
@@ -212,7 +234,7 @@ export class DatabaseClient {
 
   async delete(dbName: string) {
     const response = await TursoClient.request<DeletedDatabase>(
-      `organizations/${this.config.org}/databases/${dbName}`,
+      `organizations/${this.org}/databases/${dbName}`,
       this.config,
       {
         method: "DELETE",
@@ -226,7 +248,7 @@ export class DatabaseClient {
     const response = await TursoClient.request<{
       instances: DatabaseInstance[];
     }>(
-      `organizations/${this.config.org}/databases/${dbName}/instances`,
+      `organizations/${this.org}/databases/${dbName}/instances`,
       this.config
     );
 
@@ -240,7 +262,7 @@ export class DatabaseClient {
     const response = await TursoClient.request<{
       instance: DatabaseInstance;
     }>(
-      `organizations/${this.config.org}/databases/${dbName}/instances/${instanceName}`,
+      `organizations/${this.org}/databases/${dbName}/instances/${instanceName}`,
       this.config
     );
 
@@ -268,7 +290,7 @@ export class DatabaseClient {
     }
 
     const response = await TursoClient.request<DatabaseToken>(
-      `organizations/${this.config.org}/databases/${dbName}/auth/tokens?${queryParams}`,
+      `organizations/${this.org}/databases/${dbName}/auth/tokens?${queryParams}`,
       this.config,
       {
         method: "POST",
@@ -287,7 +309,7 @@ export class DatabaseClient {
 
   async rotateTokens(dbName: string): Promise<void> {
     return await TursoClient.request<void>(
-      `organizations/${this.config.org}/databases/${dbName}/auth/rotate`,
+      `organizations/${this.org}/databases/${dbName}/auth/rotate`,
       this.config,
       {
         method: "POST",
@@ -314,7 +336,7 @@ export class DatabaseClient {
       instances: InstanceUsages;
       total: TotalUsage;
     }>(
-      `organizations/${this.config.org}/databases/${dbName}/usage?${queryParams}`,
+      `organizations/${this.org}/databases/${dbName}/usage?${queryParams}`,
       this.config
     );
 
