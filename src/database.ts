@@ -117,6 +117,11 @@ function hasSchemaOption(
   return options !== undefined && options.schema !== undefined;
 }
 
+/**
+ * Methods that operate on a single database take a `dbName` positional
+ * argument that identifies the database in the request path. On v1/v2 of the
+ * Turso API this is the database name; on v3 it is the database id.
+ */
 export class DatabaseClient {
   constructor(private config: TursoConfig) {}
 
@@ -162,7 +167,10 @@ export class DatabaseClient {
       image?: "latest" | "canary";
       /** Name of the group where the database should be created. */
       group?: string;
-      /** Id of the group where the database should be created. Mutually exclusive with `group`. */
+      /**
+       * Id of the group where the database should be created. Mutually
+       * exclusive with `group`. Requires v3 of the Turso API.
+       */
       groupId?: string;
       seed?: {
         type: "database" | "dump";

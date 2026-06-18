@@ -34,7 +34,8 @@ const turso = createClient({
 ```
 
 You can also identify your organization by id instead of slug. Provide either
-`org` or `orgId` (`orgId` takes precedence when both are set):
+`org` or `orgId` (`orgId` takes precedence when both are set). `orgId` requires
+v3 of the Turso API:
 
 ```ts
 const turso = createClient({
@@ -101,6 +102,11 @@ const token = await turso.apiTokens.revoke("superdupertokenname");
 const token = await turso.apiTokens.validate("token");
 ```
 
+Methods that operate on a single database (`get`, `delete`, `createToken`,
+`rotateTokens`, `usage`, `listInstances`, `getInstance`, `updateVersion`) take a
+database identifier. On v1/v2 of the Turso API this is the database name; on v3
+it is the database id.
+
 ```ts
 const database = await turso.databases.list();
 const database = await turso.databases.list({
@@ -113,7 +119,8 @@ const database = await turso.databases.create("db-name");
 const database = await turso.databases.create("db-name", {
   group: "my-group",
 });
-// Identify the group by id instead of name (mutually exclusive with `group`)
+// Identify the group by id instead of name (mutually exclusive with `group`).
+// Requires v3 of the Turso API.
 const database = await turso.databases.create("db-name", {
   groupId: "my-group-id",
 });

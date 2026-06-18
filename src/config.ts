@@ -12,6 +12,8 @@ export interface TursoConfig {
   /**
    * Organization id. Can be provided instead of the organization slug (`org`).
    * Takes precedence over `org` when both are set.
+   *
+   * Requires v3 of the Turso API.
    */
   orgId?: string;
   token: TursoToken;
