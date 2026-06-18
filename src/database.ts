@@ -22,7 +22,7 @@ export interface Database {
 
 export interface ApiDatabaseResponse
   extends Database,
-    ApiCreateDatabaseResponse {}
+  ApiCreateDatabaseResponse { }
 
 export interface ApiCreateDatabaseResponse {
   DbId: string;
@@ -123,7 +123,7 @@ function hasSchemaOption(
  * Turso API this is the database name; on v3 it is the database id.
  */
 export class DatabaseClient {
-  constructor(private config: TursoConfig) {}
+  constructor(private config: TursoConfig) { }
 
   private get org(): string {
     return resolveOrganization(this.config);
@@ -142,9 +142,7 @@ export class DatabaseClient {
       }).filter(([_, value]) => value !== undefined) as [string, string][]
     );
 
-    const url = `organizations/${this.org}/databases${
-      queryParams.toString() ? `?${queryParams.toString()}` : ""
-    }`;
+    const url = `organizations/${this.org}/databases${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
 
     const response = await TursoClient.request<{
       databases: ApiDatabaseResponse[];
