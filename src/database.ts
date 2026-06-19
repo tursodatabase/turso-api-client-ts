@@ -179,7 +179,7 @@ export class DatabaseClient {
       size_limit?: string;
       remote_encryption?: RemoteEncryption;
       /** When true, provisions the database using TursoDB. */
-      use_tursodb?: boolean;
+      useTursoDb?: boolean;
     } & MultiDBSchemaOptions
   ): Promise<CreatedDatabase> {
     if (hasIsSchemaOption(options) && hasSchemaOption(options)) {
@@ -203,7 +203,7 @@ export class DatabaseClient {
       options.seed.timestamp = this.formatDateParameter(options.seed.timestamp);
     }
 
-    const { groupId, ...rest } = options ?? {};
+    const { groupId, useTursoDb, ...rest } = options ?? {};
 
     const response = await TursoClient.request<{
       database: ApiCreateDatabaseResponse;
@@ -216,6 +216,7 @@ export class DatabaseClient {
         name: dbName,
         ...rest,
         ...(groupId !== undefined ? { group_id: groupId } : {}),
+        ...(useTursoDb !== undefined ? { use_tursodb: useTursoDb } : {}),
       }),
     });
 
