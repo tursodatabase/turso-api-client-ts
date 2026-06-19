@@ -61,7 +61,7 @@ def main():
         subprocess.run(['git', 'tag', f'v{version}'], check=True)
         print(f"Created tag: v{version}")
 
-        print(f"\nSuccess! Now run: git push --follow-tags")
+        print(f"\nSuccess! Now run: git push origin main v{version}")
     except subprocess.CalledProcessError as e:
         print(f"Error during git operations: {e}")
         sys.exit(1)
