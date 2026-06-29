@@ -40,6 +40,22 @@ describe("DatabaseClient", () => {
     );
   });
 
+  it("parses and propagates database_type from the get response", async () => {
+    vi.mocked(TursoClient.request).mockResolvedValue({
+      database: {
+        Name: "testDB",
+        DbId: "id",
+        Hostname: "host",
+        type: "logical",
+        database_type: "tursodb",
+      },
+    });
+
+    const database = await client.get("testDB");
+
+    expect(database.database_type).toBe("tursodb");
+  });
+
   it("forwards remote_encryption options when creating an encrypted database", async () => {
     vi.mocked(TursoClient.request).mockResolvedValue({
       database: { DbId: "id", Hostname: "host", Name: "testDB" },
