@@ -2,6 +2,12 @@ import { LocationKeys } from "./location";
 import { TursoConfig, resolveOrganization } from "./config";
 import { TursoClient } from "./client";
 
+/**
+ * The underlying database engine. `libsql` is the legacy engine; `tursodb` is
+ * provisioned when a database is created with the `useTursoDb` option.
+ */
+export type DatabaseType = "libsql" | "tursodb";
+
 export interface Database {
   name: string;
   id: string;
@@ -9,6 +15,7 @@ export interface Database {
   regions?: Array<keyof LocationKeys>;
   primaryRegion?: keyof LocationKeys;
   type: string;
+  database_type: DatabaseType;
   version: string;
   group?: string;
   sleeping: boolean;
@@ -356,6 +363,7 @@ export class DatabaseClient {
       regions: db.regions,
       primaryRegion: db.primaryRegion,
       type: db.type,
+      database_type: db.database_type,
       version: db.version,
       group: db.group,
       sleeping: db.sleeping,

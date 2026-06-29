@@ -12,6 +12,7 @@ export type { TursoClientError } from "./client";
 export type { TursoConfig, TursoToken } from "./config";
 export type {
   Database,
+  DatabaseType,
   CreatedDatabase,
   DatabaseUsage,
   InstanceUsages,
