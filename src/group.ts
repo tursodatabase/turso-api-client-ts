@@ -128,13 +128,16 @@ export class GroupClient {
    * @param options Token creation options
    * @param options.expiration Token expiration
    * @param options.authorization Token authorization level
-   * @param options.permissions - @deprecated This parameter is deprecated and will be removed in a future version
+   * @param options.permissions This parameter is deprecated and will be removed in a future version
    */
   async createToken(
     groupName: string,
     options?: {
       expiration?: string;
       authorization?: "read-only" | "full-access";
+      /**
+       * @deprecated This parameter is deprecated and will be removed in a future version
+       */
       permissions?: {
         read_attach: { databases: Database["name"][] };
       };
