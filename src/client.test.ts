@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TursoClient, TursoClientError, createClient } from "./client";
 
 describe("TursoClient", () => {
@@ -41,5 +41,58 @@ describe("createClient", () => {
     const client = createClient({ org: "turso", token: "abc" });
 
     expect(client).toBeInstanceOf(TursoClient);
+  });
+});
+
+describe("headers option", () => {
+  const fetchMock = vi.fn(
+    async (_url: URL, _init?: RequestInit) => new Response("{}")
+  );
+
+  beforeEach(() => {
+    fetchMock.mockClear();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function sentHeaders(): Headers {
+    return new Headers(fetchMock.mock.calls[0][1]?.headers);
+  }
+
+  it("sends custom headers to the Turso API", async () => {
+    const client = createClient({
+      org: "turso",
+      token: "abc",
+      headers: { "X-Custom-Header": "custom-value" },
+    });
+
+    await client.groups.list();
+
+    const headers = sentHeaders();
+    expect(headers.get("X-Custom-Header")).toBe("custom-value");
+    expect(headers.get("Authorization")).toBe("Bearer abc");
+    expect(headers.get("User-Agent")).toBe("@tursodatabase/api");
+  });
+
+  it("replaces custom headers that the client also sets", async () => {
+    const client = createClient({
+      org: "turso",
+      token: "abc",
+      headers: {
+        authorization: "Bearer other-token",
+        "user-agent": "other-agent",
+        "Content-Type": "text/plain",
+      },
+    });
+
+    await client.groups.create("default", "ams");
+
+    const headers = sentHeaders();
+    expect(headers.get("Authorization")).toBe("Bearer abc");
+    expect(headers.get("User-Agent")).toBe("@tursodatabase/api");
+    expect(headers.get("Content-Type")).toBe("application/json");
   });
 });

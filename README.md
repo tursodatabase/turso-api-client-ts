@@ -55,6 +55,20 @@ const turso = createClient({
 });
 ```
 
+`headers` adds custom HTTP headers to every request to the Turso API. Headers
+that the client sets itself, such as `Authorization` and `User-Agent`, replace
+headers of the same name in `headers`:
+
+```ts
+const turso = createClient({
+  org: "",
+  token: "...",
+  headers: {
+    "X-Request-Source": "my-backend",
+  },
+});
+```
+
 ```ts
 const organizations = await turso.organizations.list();
 const orgMembers = await turso.organizations.update({ overages: true });
