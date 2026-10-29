@@ -18,6 +18,10 @@ export interface TursoConfig {
   orgId?: string;
   token: TursoToken;
   baseUrl?: string;
+  /**
+   * Custom HTTP headers to send with every request to the Turso API.
+   */
+  headers?: Record<string, string>;
 }
 
 /**

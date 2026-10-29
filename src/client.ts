@@ -57,13 +57,18 @@ export class TursoClient {
   ) {
     const token = await resolveToken(config);
 
+    // `Headers.set` replaces a header with the same name in any letter case.
+    // With a plain object, fetch sends both values joined in one header.
+    const headers = new Headers(config.headers);
+    new Headers(options.headers).forEach((value, name) => {
+      headers.set(name, value);
+    });
+    headers.set("Authorization", `Bearer ${token}`);
+    headers.set("User-Agent", "@tursodatabase/api");
+
     const response = await fetch(new URL(url, config.baseUrl), {
       ...options,
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${token}`,
-        "User-Agent": "@tursodatabase/api",
-      },
+      headers,
     });
 
     if (!response.ok) {
